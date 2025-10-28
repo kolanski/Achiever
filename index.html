@@ -791,6 +791,221 @@
         .task-selector-item.selected .task-status {
             color: rgba(255, 255, 255, 0.9);
         }
+
+        /* Responsive Design for Smartphones */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 0 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            .level-selector {
+                flex-direction: column;
+                gap: 8px;
+                align-items: center;
+            }
+
+            .level-btn {
+                width: 100%;
+                max-width: 200px;
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+
+            .board {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .column {
+                min-width: unset;
+                width: 100%;
+                padding: 12px;
+            }
+
+            .column-header {
+                font-size: 1.1em;
+                margin-bottom: 12px;
+            }
+
+            .card {
+                padding: 12px;
+                margin-bottom: 8px;
+                min-height: 100px;
+            }
+
+            .card-title {
+                font-size: 0.95em;
+            }
+
+            .card-desc {
+                font-size: 0.85em;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+                padding: 15px;
+                margin-top: 20px;
+            }
+
+            .stat-item {
+                text-align: center;
+            }
+
+            .stat-number {
+                font-size: 2em;
+            }
+
+            .modal-content {
+                width: 95%;
+                max-width: none;
+                max-height: 90vh;
+                padding: 15px;
+            }
+
+            .modal-header h3 {
+                font-size: 18px;
+            }
+
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                padding: 10px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .week-overview {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .overview-left-panel,
+            .overview-right-panel {
+                flex: none;
+                width: 100%;
+            }
+
+            .task-selector-item {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .task-title {
+                font-size: 16px;
+                margin-bottom: 6px;
+            }
+
+            .task-desc,
+            .task-time,
+            .task-status {
+                font-size: 13px;
+                margin: 4px 0;
+            }
+
+            .day-selector {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .day-buttons-row {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .day-btn {
+                padding: 6px 8px;
+                font-size: 12px;
+                min-width: 40px;
+            }
+
+            .activity-timeline {
+                padding: 20px 10px;
+            }
+
+            .time-slot {
+                padding: 15px 5px;
+                min-height: 140px;
+            }
+
+            .time-label {
+                width: 60px;
+                font-size: 12px;
+            }
+
+            .slot-activities {
+                gap: 8px;
+            }
+
+            .add-activity-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+                margin-left: 15px;
+            }
+
+            .breadcrumb {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .breadcrumb-item {
+                text-align: center;
+                margin-bottom: 5px;
+                margin-right: 0;
+            }
+
+            .current-date {
+                font-size: 14px;
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .day-buttons-row {
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 250px;
+            }
+
+            .modal-content {
+                width: 98%;
+                padding: 10px;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .modal-actions button {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
