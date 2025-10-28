@@ -1,0 +1,2125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Achiever - Управление целями</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --work-primary: #667eea;
+            --work-secondary: #764ba2;
+            --life-primary: #f093fb;
+            --life-secondary: #f5576c;
+            --others-primary: #4facfe;
+            --others-secondary: #00f2fe;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { 
+            margin: 0; 
+            padding: 20px; 
+            background: var(--background);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: white; margin-bottom: 30px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+
+        h2 {
+            color: #4facfe;
+            font-size: 22px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Enhanced Glassmorphism */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Enhanced Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 16px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Level Buttons */
+        .level-btn { 
+            background: rgba(102,126,234,0.8); 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            font-size: 1em; 
+            transition: all 0.3s ease;
+            font-weight: bold;
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+        .level-btn.active { 
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white; 
+            box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4); }
+            50% { box-shadow: 0 4px 20px rgba(79, 172, 254, 0.5); }
+        }
+
+        .level-btn:hover {
+            background: rgba(102,126,234,1);
+            transform: scale(1.05);
+        }
+        
+        .breadcrumb { 
+            margin-bottom: 20px; 
+            display: flex; 
+            align-items: center; 
+            flex-wrap: wrap;
+        }
+        .breadcrumb-item { 
+            background: rgba(255,255,255,0.9); 
+            padding: 8px 16px; 
+            border-radius: 20px; 
+            margin-right: 10px; 
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .breadcrumb-item:hover { background: white; }
+        .breadcrumb-item.active { background: #667eea; color: white; }
+        
+        .form-container { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-full { grid-column: 1 / -1; }
+        input, textarea, select { 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #667eea; }
+        button { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 1em; 
+            transition: all 0.3s ease;
+            grid-column: 1 / -1;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+        
+        .stats { 
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .stat-item { text-align: center; }
+        .stat-number { 
+            font-size: 2.5em; 
+            font-weight: 800; 
+            background: linear-gradient(135deg, #ffffff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: count-up 2s ease-out;
+        }
+        .stat-label { 
+            color: rgba(255, 255, 255, 0.7); 
+            font-weight: 500; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+        
+        .level-selector { 
+            display: flex; 
+            justify-content: center; 
+            margin-bottom: 20px; 
+            gap: 10px;
+        }
+        .level-btn { 
+            background: rgba(102,126,234,0.8); 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            font-size: 1em; 
+            transition: all 0.3s ease;
+            font-weight: bold;
+            color: white;
+        }
+        .level-btn.active { 
+            background: #667eea; 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+        .board { 
+            display: flex; 
+            gap: 20px; 
+            overflow-x: auto; 
+            padding: 20px 0;
+            min-height: 60vh;
+            justify-content: center;
+        }
+        .column { 
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 15px; 
+            min-width: 300px; 
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .column:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        .column-header { 
+            font-size: 1.2em; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            color: white; 
+            border-bottom: 2px solid #4facfe; 
+            padding-bottom: 10px;
+        }
+        .column-cards { 
+            flex: 1; 
+            min-height: 200px;
+        }
+        .card { 
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 15px; 
+            margin-bottom: 10px; 
+            box-shadow: 
+                0 4px 16px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            cursor: move; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            draggable: true;
+            flex-shrink: 0;
+            min-width: 200px;
+            max-width: 300px;
+            display: flex;
+            flex-direction: column;
+            min-height: 120px;
+        }
+        .card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .card.dragging { 
+            opacity: 0.5; 
+            transform: rotate(5deg);
+        }
+        .card-title { font-size: 1em; font-weight: bold; margin-bottom: 5px; }
+        .card-desc { color: #666; font-size: 0.9em; }
+        .card-content {
+            flex: 1;
+            margin-bottom: 10px;
+        }
+        .card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+        .completed-icon {
+            color: green;
+            font-size: 1.2em;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            color: #4facfe;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 0.9em;
+        }
+        .action-btn:hover {
+            background: rgba(79, 172, 254, 0.1);
+            transform: scale(1.1);
+        }
+        .delete-btn {
+            color: #ef4444;
+        }
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .add-card-btn { 
+            background: rgba(79, 172, 254, 0.1); 
+            border: 2px dashed rgba(79, 172, 254, 0.5); 
+            border-radius: 16px; 
+            padding: 10px; 
+            text-align: center; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: rgba(79, 172, 254, 0.8);
+            font-weight: 500;
+        }
+        .add-card-btn:hover { 
+            background: rgba(79, 172, 254, 0.2);
+            border-color: #4facfe;
+            color: #4facfe;
+            transform: translateY(-2px);
+        }
+        .day-selector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .day-info-row {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            font-weight: bold;
+            color: #4facfe;
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            font-size: 14px;
+        }
+        
+        .day-btn {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(79, 172, 254, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            color: rgba(79, 172, 254, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 40px;
+        }
+        
+        .day-btn:hover {
+            background: rgba(79, 172, 254, 0.1);
+            border-color: #4facfe;
+            color: #4facfe;
+            transform: scale(1.05);
+        }
+        
+        .day-btn.active {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-color: #4facfe;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+        
+        .current-date {
+            font-weight: bold;
+            color: #4facfe;
+            font-size: 16px;
+            margin-left: 20px;
+            background: rgba(79, 172, 254, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+            backdrop-filter: blur(10px);
+        }
+                .activity-timeline { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 0; 
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .time-slot { 
+            display: flex; 
+            align-items: flex-start; 
+            min-height: 180px; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+            padding: 20px 0;
+            position: relative;
+            transition: background 0.3s ease;
+        }
+        .time-slot:hover {
+            background: rgba(102,126,234,0.05);
+        }
+        .time-label { 
+            width: 80px; 
+            font-weight: bold; 
+            color: #333; 
+            padding-right: 20px; 
+            text-align: right;
+            font-size: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .slot-activities { 
+            flex: 1; 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap;
+            align-items: center;
+        }
+                .add-activity-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-left: 25px;
+            box-shadow: 0 3px 10px rgba(79, 172, 254, 0.4);
+            position: relative;
+        }
+        .add-activity-btn:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            transform: scale(1.15);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.5);
+        }
+        .add-activity-btn:active {
+            transform: scale(1.05);
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @keyframes count-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 0;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: white;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            color: white;
+        }
+        
+        #editForm {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: white;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .modal-actions button[type="button"] {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .modal-actions button[type="submit"] {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .week-overview {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .overview-left-panel {
+            flex: 1;
+            background: rgba(255,255,255,0.7);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .overview-left-panel h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .add-task-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .add-task-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+        
+        .overview-task-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+        
+        .overview-task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .task-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #000;
+        }
+        
+        .task-desc {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .overview-right-panel {
+            flex: 2;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .overview-right-panel h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .overview-hour-group {
+            margin-bottom: 20px;
+        }
+        
+        .overview-hour-group h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .overview-activity-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #28a745;
+        }
+        
+        .activity-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .activity-desc {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .overview-task-card.selected-task {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-left-color: #4facfe;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .overview-task-card.selected-task .task-title {
+            color: white;
+        }
+        
+        .overview-task-card.selected-task .task-desc {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .task-selector-item {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-height: 120px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .task-selector-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .task-selector-item.selected {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: 2px solid rgba(79, 172, 254, 0.8);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .task-selector-item.selected .task-title {
+            color: white;
+        }
+        
+        .task-selector-item .task-desc,
+        .task-selector-item .task-time,
+        .task-selector-item .task-status {
+            color: #000;
+            font-size: 12px;
+            margin: 6px 0;
+        }
+        
+        .task-selector-item.selected .task-desc,
+        .task-selector-item.selected .task-time,
+        .task-selector-item.selected .task-status {
+            color: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-bullseye"></i> Achiever</h1>
+        
+        <div class="level-selector">
+            <button class="level-btn active" onclick="selectLevel('year')">Год</button>
+            <button class="level-btn" onclick="selectLevel('month')">Месяц</button>
+            <button class="level-btn" onclick="selectLevel('week')">Неделя</button>
+            <button class="level-btn" onclick="selectLevel('activity')">Активности</button>
+        </div>
+        
+        <div class="view-selector" id="view-selector" style="display: none;">
+            <button class="level-btn active" onclick="setActivityView('row')">Строка</button>
+        </div>
+        
+        <div class="day-selector" id="day-selector" style="display: none;">
+            <div class="day-info-row" id="day-info-row" style="display: none;">
+                Выбран: <span id="selected-day-info"></span>
+            </div>
+            <div class="day-buttons-row">
+                <button class="day-btn" onclick="selectDay('monday')">Пн</button>
+                <button class="day-btn" onclick="selectDay('tuesday')">Вт</button>
+                <button class="day-btn" onclick="selectDay('wednesday')">Ср</button>
+                <button class="day-btn" onclick="selectDay('thursday')">Чт</button>
+                <button class="day-btn" onclick="selectDay('friday')">Пт</button>
+                <button class="day-btn" onclick="selectDay('saturday')">Сб</button>
+                <button class="day-btn" onclick="selectDay('sunday')">Вс</button>
+                <span id="currentDate" class="current-date"></span>
+            </div>
+        </div>
+        
+        <div class="board" id="board">
+            <!-- Columns will be generated here -->
+        </div>        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="goals-count">0</div>
+                <div class="stat-label">Целей</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="tasks-count">0</div>
+                <div class="stat-label">Задач</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="activities-count">0</div>
+                <div class="stat-label">Активностей</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="time-spent">0ч</div>
+                <div class="stat-label">Времени</div>
+            </div>
+        </div>
+    <div class="modal" id="addModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="addModalTitle">Добавить</h3>
+                <button class="close-btn" onclick="closeAddModal()">&times;</button>
+            </div>
+            <form id="addForm" onsubmit="saveAdd(event)">
+                <div class="form-group">
+                    <label for="addTitle">Название:</label>
+                    <input type="text" id="addTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="addDescription">Описание:</label>
+                    <textarea id="addDescription"></textarea>
+                </div>
+                <div class="form-group" id="addDeadlineGroup">
+                    <label for="addDeadline">Дедлайн:</label>
+                    <input type="date" id="addDeadline">
+                </div>
+                <div class="form-group" id="addStartTimeGroup" style="display: none;">
+                    <label for="addStartTime">Время начала:</label>
+                    <input type="datetime-local" id="addStartTime">
+                </div>
+                <div class="form-group" id="addDurationGroup" style="display: none;">
+                    <label for="addDuration">Длительность (часы):</label>
+                    <input type="number" id="addDuration" step="0.5" min="0">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="closeAddModal()">Отмена</button>
+                    <button type="submit">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal" id="editModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Редактирование</h3>
+                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="editForm" onsubmit="saveEdit(event)">
+                <div class="form-group">
+                    <label for="editTitle">Название:</label>
+                    <input type="text" id="editTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDescription">Описание:</label>
+                    <textarea id="editDescription"></textarea>
+                </div>
+                <div class="form-group" id="deadlineGroup">
+                    <label for="editDeadline">Дедлайн:</label>
+                    <input type="date" id="editDeadline">
+                </div>
+                <div class="form-group" id="startTimeGroup" style="display: none;">
+                    <label for="editStartTime">Время начала:</label>
+                    <input type="datetime-local" id="editStartTime">
+                </div>
+                <div class="form-group" id="durationGroup" style="display: none;">
+                    <label for="editDuration">Длительность (часы):</label>
+                    <input type="number" id="editDuration" step="0.5" min="0">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="closeEditModal()">Отмена</button>
+                    <button type="submit">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let goals = JSON.parse(localStorage.getItem('goals') || '[]');
+        let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        let activities = JSON.parse(localStorage.getItem('activities') || '[]');
+        let currentLevel = 'year'; // year, month, week, task, activity
+        let currentParentId = null;
+        let breadcrumb = [{ level: 'main', name: 'Главная', parentId: null }];
+        let editingItem = null;
+        let editingType = null;
+
+        const levelNames = {
+            year: 'Год',
+            month: 'Месяц', 
+            week: 'Неделя',
+            task: 'Задачи',
+            activity: 'Активности'
+        };
+
+        const levelIcons = {
+            year: 'fas fa-calendar-alt',
+            month: 'fas fa-calendar-week',
+            week: 'fas fa-calendar-day',
+            task: 'fas fa-tasks',
+            activity: 'fas fa-running'
+        };
+
+        const nextLevel = {
+            year: 'month',
+            month: 'week',
+            week: 'task',
+            task: 'activity'
+        };
+
+        let activityView = 'row'; // row
+        let selectedDay = localStorage.getItem('selectedDay') || 'monday'; // monday, tuesday, etc. - will be set to current day
+        let weekViewMode = localStorage.getItem('weekViewMode') || 'week'; // day, week - for week overview
+        console.log('Initial weekViewMode:', weekViewMode);
+        let selectedTaskId = null; // for week view - currently selected task
+        let selectedWeekTaskIds = JSON.parse(localStorage.getItem('selectedWeekTaskIds') || '[]'); // for week view - selected tasks for filtering
+
+        function selectLevel(level) {
+            currentLevel = level;
+            document.querySelectorAll('.level-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="selectLevel('${level}')"]`).classList.add('active');
+            
+            const viewSelector = document.getElementById('view-selector');
+            const daySelector = document.getElementById('day-selector');
+            
+            if (level === 'activity') {
+                viewSelector.style.display = 'flex';
+                // Show day selector for activity view
+                const daySelector = document.getElementById('day-selector');
+                const dayInfoRow = document.getElementById('day-info-row');
+                daySelector.style.display = 'flex';
+                dayInfoRow.style.display = 'flex';
+                setActivityView(activityView);
+                updateCurrentDate();
+                // Scroll to bottom of page when activity view is selected
+                setTimeout(() => {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }, 100);
+            } else {
+                viewSelector.style.display = 'none';
+                daySelector.style.display = 'none';
+                document.getElementById('day-info-row').style.display = 'none';
+            }
+            
+            renderBoard();
+        }
+
+        function setActivityView(view) {
+            activityView = view;
+            document.querySelectorAll('#view-selector .level-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="setActivityView('${view}')"]`).classList.add('active');
+            
+            // Hide day selector for row view
+            const daySelector = document.getElementById('day-selector');
+            const dayInfoRow = document.getElementById('day-info-row');
+            daySelector.style.display = 'none';
+            dayInfoRow.style.display = 'none';
+            
+            renderBoard();
+        }
+
+        function setWeekViewMode(mode) {
+            weekViewMode = mode;
+            localStorage.setItem('weekViewMode', mode);
+
+            // Update active button - find buttons in the week overview
+            const overview = document.querySelector('.week-overview');
+            if (overview) {
+                const buttons = overview.querySelectorAll('.level-btn');
+                buttons.forEach(btn => {
+                    if (btn.onclick.toString().includes(`setWeekViewMode('${mode}')`)) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            // Update task highlighting based on mode
+            if (mode === 'week' || mode === 'day') {
+                // Apply highlighting for selected tasks
+                document.querySelectorAll('.task-selector-item').forEach(item => {
+                    const itemTaskId = item.onclick ? item.onclick.toString().match(/toggleWeekTask\('([^']+)'\)/)?.[1] : null;
+                    if (itemTaskId && selectedWeekTaskIds.includes(itemTaskId)) {
+                        item.classList.add('selected');
+                    } else {
+                        item.classList.remove('selected');
+                    }
+                });
+            }
+
+            if (mode === 'day') {
+                // For day view, show activities for the currently selected day
+                showDayActivities();
+            } else {
+                // For week view, show activities for selected task or all tasks
+                showWeekActivities();
+            }
+        }
+
+        function updateCurrentDate() {
+            const today = new Date();
+            const dayIndex = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const currentDayName = dayNames[dayIndex];
+            
+            // Set current day as selected if not already set
+            if (!selectedDay) {
+                selectedDay = currentDayName;
+                localStorage.setItem('selectedDay', currentDayName);
+                document.querySelectorAll('.day-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[onclick="selectDay('${currentDayName}')"]`).classList.add('active');
+            }
+            
+            // Update current date display
+            const dateStr = today.toLocaleDateString('ru-RU', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('currentDate').textContent = dateStr;
+            
+            // Update selected day info
+            const fullDayNames = {
+                'monday': 'Понедельник',
+                'tuesday': 'Вторник',
+                'wednesday': 'Среда',
+                'thursday': 'Четверг',
+                'friday': 'Пятница',
+                'saturday': 'Суббота',
+                'sunday': 'Воскресенье'
+            };
+            document.getElementById('selected-day-info').textContent = fullDayNames[selectedDay];
+        }
+
+        function selectDay(day) {
+            selectedDay = day;
+            localStorage.setItem('selectedDay', day);
+            
+            // Update selected day info
+            const fullDayNames = {
+                'monday': 'Понедельник',
+                'tuesday': 'Вторник',
+                'wednesday': 'Среда',
+                'thursday': 'Четверг',
+                'friday': 'Пятница',
+                'saturday': 'Суббота',
+                'sunday': 'Воскресенье'
+            };
+            document.getElementById('selected-day-info').textContent = fullDayNames[day];
+            
+            // Re-render activities for the selected day
+            showDayActivities();
+        }
+
+        function toggleWeekTask(taskId) {
+            if (weekViewMode === 'day') {
+                // Single selection mode - only one task can be selected
+                if (selectedWeekTaskIds.includes(taskId)) {
+                    // If clicking on already selected task, deselect it
+                    selectedWeekTaskIds = [];
+                } else {
+                    // Select new task (replace previous selection)
+                    selectedWeekTaskIds = [taskId];
+                }
+            } else {
+                // Multiple selection mode - can select multiple tasks
+                const index = selectedWeekTaskIds.indexOf(taskId);
+                if (index > -1) {
+                    // Remove task from selection
+                    selectedWeekTaskIds.splice(index, 1);
+                } else {
+                    // Add task to selection
+                    selectedWeekTaskIds.push(taskId);
+                }
+            }
+            
+            localStorage.setItem('selectedWeekTaskIds', JSON.stringify(selectedWeekTaskIds));
+            
+            // Update task selector items
+            document.querySelectorAll('.task-selector-item').forEach(item => {
+                const itemTaskId = item.onclick ? item.onclick.toString().match(/toggleWeekTask\('([^']+)'\)/)?.[1] : null;
+                if (itemTaskId && selectedWeekTaskIds.includes(itemTaskId)) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+            
+            // Re-render activities with filter
+            if (weekViewMode === 'day') {
+                showDayActivities();
+            } else {
+                showWeekActivities();
+            }
+        }
+
+        function renderBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            
+            if (currentLevel === 'activity') {
+                // Week overview with tasks
+                renderWeekOverview();
+            } else {
+                // Two columns: current level and next level
+                const currentColumn = createColumn(levelNames[currentLevel]);
+                const nextColumn = createColumn(levelNames[nextLevel[currentLevel]]);
+                
+                // Current level items
+                let currentItems = goals.filter(g => g.type === currentLevel && !g.parentId);
+                currentItems.forEach(item => {
+                    const card = createCard(item, currentLevel);
+                    currentColumn.querySelector('.column-cards').appendChild(card);
+                });
+                
+                // Next level items
+                let nextItems = [];
+                if (nextLevel[currentLevel] === 'task') {
+                    nextItems = tasks;
+                } else if (nextLevel[currentLevel] === 'activity') {
+                    nextItems = activities;
+                } else {
+                    nextItems = goals.filter(g => g.type === nextLevel[currentLevel]);
+                }
+                nextItems.forEach(item => {
+                    const card = createCard(item, nextLevel[currentLevel]);
+                    nextColumn.querySelector('.column-cards').appendChild(card);
+                });
+                
+                board.appendChild(currentColumn);
+                board.appendChild(nextColumn);
+            }
+            
+            updateStats();
+        }
+
+        function createColumn(title) {
+            const column = document.createElement('div');
+            column.className = 'column';
+            column.innerHTML = `
+                <div class="column-header">${title}</div>
+                <div class="column-cards" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                <div class="add-card-btn" onclick="showAddForm('${title.toLowerCase()}')">+ Добавить</div>
+            `;
+            return column;
+        }
+
+        function createCard(item, type) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            // Only make draggable and add buttons if not in week overview mode
+            if (activityView !== 'week') {
+                card.draggable = true;
+                card.ondragstart = (e) => dragStart(e, item.id, type);
+            }
+            
+            const isReadOnly = activityView === 'week';
+            
+            card.innerHTML = `
+                <div class="card-content">
+                    <div class="card-title">${item.title}</div>
+                    <div class="card-desc">${item.description || ''}</div>
+                    ${item.month ? `<div class="card-desc">Месяц: ${item.month}</div>` : ''}
+                    ${item.parentId ? `<div class="card-desc">Родитель: ${goals.find(g => g.id === item.parentId)?.title || 'Неизвестно'}</div>` : ''}
+                    ${item.deadline ? `<div class="card-desc">Дедлайн: ${item.deadline}</div>` : ''}
+                    ${item.startTime ? `<div class="card-desc">Время: ${new Date(item.startTime).toLocaleTimeString()}</div>` : ''}
+                    ${item.duration ? `<div class="card-desc">Длительность: ${item.duration}ч</div>` : ''}
+                </div>
+                ${!isReadOnly ? `
+                <div class="card-actions">
+                    ${item.status === 'completed' ? '<i class="fas fa-check-circle completed-icon"></i>' : ''}
+                    <button onclick="event.stopPropagation(); completeItem('${item.id}', '${type}')" class="action-btn complete-btn">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button onclick="event.stopPropagation(); editItem('${item.id}', '${type}')" class="action-btn edit-btn">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="event.stopPropagation(); deleteItem('${item.id}', '${type}')" class="action-btn delete-btn">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                ` : ''}
+            `;
+            
+            if (!isReadOnly) {
+                card.addEventListener('dblclick', () => editItem(item.id, type));
+            }
+            
+            return card;
+        }        function showAddForm(type) {
+            addingType = type;
+            
+            // Clear form
+            document.getElementById('addTitle').value = '';
+            document.getElementById('addDescription').value = '';
+            
+            const addModalTitle = document.getElementById('addModalTitle');
+            const addDeadlineGroup = document.getElementById('addDeadlineGroup');
+            const addStartTimeGroup = document.getElementById('addStartTimeGroup');
+            const addDurationGroup = document.getElementById('addDurationGroup');
+            
+            if (type === 'activity') {
+                addModalTitle.textContent = 'Добавить активность';
+                addDeadlineGroup.style.display = 'none';
+                addStartTimeGroup.style.display = 'block';
+                addDurationGroup.style.display = 'block';
+                
+                // Set default time for selected day
+                const today = new Date();
+                const dayIndex = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(selectedDay);
+                const currentDayIndex = today.getDay();
+                const diff = dayIndex - currentDayIndex;
+                const targetDate = new Date(today);
+                targetDate.setDate(today.getDate() + diff);
+                const dateStr = targetDate.toISOString().split('T')[0];
+                document.getElementById('addStartTime').value = `${dateStr}T09:00`;
+                document.getElementById('addDuration').value = '1';
+
+                // Add task selection
+                const taskSelect = document.createElement('div');
+                taskSelect.className = 'form-group';
+                taskSelect.innerHTML = `
+                    <label for="addTaskSelect">Привязать к задаче:</label>
+                    <select id="addTaskSelect">
+                        <option value="">Без задачи</option>
+                        ${tasks.map(t => `<option value="${t.id}" ${selectedWeekTaskIds[0] === t.id ? 'selected' : ''}>${t.title}</option>`).join('')}
+                    </select>
+                `;
+                document.getElementById('addForm').insertBefore(taskSelect, addStartTimeGroup);
+            } else if (type === 'task') {
+                addModalTitle.textContent = 'Добавить задачу';
+                addDeadlineGroup.style.display = 'block';
+                addStartTimeGroup.style.display = 'none';
+                addDurationGroup.style.display = 'none';
+                // Add parent goal select
+                const parentSelect = document.createElement('div');
+                parentSelect.className = 'form-group';
+                parentSelect.innerHTML = `
+                    <label for="addParentGoal">Родительская цель (месяц):</label>
+                    <select id="addParentGoal">
+                        <option value="">Без родителя</option>
+                        ${goals.filter(g => g.type === 'month').map(g => `<option value="${g.id}">${g.title} (${g.month})</option>`).join('')}
+                    </select>
+                `;
+                document.getElementById('addForm').insertBefore(parentSelect, document.getElementById('addDeadlineGroup'));
+            } else {
+                addModalTitle.textContent = `Добавить ${currentLevel === 'task' ? 'задачу' : 'цель'}`;
+                addDeadlineGroup.style.display = 'block';
+                addStartTimeGroup.style.display = 'none';
+                addDurationGroup.style.display = 'none';
+                if (type === 'month') {
+                    // Add month select
+                    const monthSelect = document.createElement('div');
+                    monthSelect.className = 'form-group';
+                    monthSelect.innerHTML = `
+                        <label for="addMonth">Месяц:</label>
+                        <select id="addMonth">
+                            <option value="january">Январь</option>
+                            <option value="february">Февраль</option>
+                            <option value="march">Март</option>
+                            <option value="april">Апрель</option>
+                            <option value="may">Май</option>
+                            <option value="june">Июнь</option>
+                            <option value="july">Июль</option>
+                            <option value="august">Август</option>
+                            <option value="september">Сентябрь</option>
+                            <option value="october">Октябрь</option>
+                            <option value="november">Ноябрь</option>
+                            <option value="december">Декабрь</option>
+                        </select>
+                    `;
+                    document.getElementById('addForm').insertBefore(monthSelect, document.getElementById('addDeadlineGroup'));
+                }
+            }
+            
+            document.getElementById('addModal').style.display = 'flex';
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').style.display = 'none';
+            addingType = null;
+            
+            // Remove dynamically added form elements
+            const taskSelect = document.getElementById('addTaskSelect');
+            if (taskSelect && taskSelect.parentNode) {
+                taskSelect.parentNode.remove();
+            }
+            const parentSelect = document.getElementById('addParentGoal');
+            if (parentSelect && parentSelect.parentNode) {
+                parentSelect.parentNode.remove();
+            }
+            const monthSelect = document.getElementById('addMonth');
+            if (monthSelect && monthSelect.parentNode) {
+                monthSelect.parentNode.remove();
+            }
+        }
+
+        function saveAdd(event) {
+            event.preventDefault();
+            
+            const title = document.getElementById('addTitle').value;
+            const description = document.getElementById('addDescription').value;
+            
+            if (addingType === 'activity') {
+                const startTime = document.getElementById('addStartTime').value;
+                const duration = document.getElementById('addDuration').value;
+                const taskSelect = document.getElementById('addTaskSelect');
+                const taskId = taskSelect ? taskSelect.value : selectedTaskId;
+                addActivity(title, description, startTime, duration, taskId);
+            } else {
+                const deadline = document.getElementById('addDeadline').value;
+                addGoal(addingType === 'task' ? 'task' : currentLevel, title, description, deadline);
+            }
+            
+            closeAddModal();
+        }
+
+        function addActivity(title, description, startTime, duration, taskId = null) {
+            // Parse the startTime to get the correct date
+            const startDateTime = new Date(startTime);
+            const dateStr = startDateTime.toISOString().split('T')[0]; // YYYY-MM-DD format
+            
+            // Get day of week from the actual date
+            const dayIndex = startDateTime.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const dayOfWeek = dayNames[dayIndex];
+            
+            const activity = {
+                id: Date.now().toString(),
+                parentId: null,
+                title: title,
+                description: description,
+                startTime: startTime,
+                duration: duration,
+                date: dateStr,
+                dayOfWeek: dayOfWeek,
+                taskId: taskId,
+                status: 'active'
+            };
+            activities.push(activity);
+            localStorage.setItem('activities', JSON.stringify(activities));
+            
+            // Always call renderBoard to properly update the view
+            renderBoard();
+        }
+
+        function addGoal(type, title, description, deadline) {
+            const goal = {
+                id: Date.now().toString(),
+                type: type,
+                parentId: null,
+                title: title,
+                description: description,
+                deadline: deadline,
+                status: 'active'
+            };
+            
+            if (type === 'month') {
+                goal.month = document.getElementById('addMonth').value;
+            }
+            
+            if (type === 'task') {
+                goal.parentId = document.getElementById('addParentGoal').value || null;
+            }
+            
+            if (type === 'task') {
+                tasks.push(goal);
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            } else {
+                goals.push(goal);
+                localStorage.setItem('goals', JSON.stringify(goals));
+            }
+            
+            renderBoard();
+        }
+
+        function editItem(id, type) {
+            const item = type === 'activity' ? activities.find(a => a.id === id) :
+                        type === 'task' ? tasks.find(t => t.id === id) :
+                        goals.find(g => g.id === id);
+            if (!item) return;
+            
+            editingItem = item;
+            editingType = type;
+            
+            // Fill form
+            document.getElementById('editTitle').value = item.title;
+            document.getElementById('editDescription').value = item.description || '';
+            
+            const modalTitle = document.getElementById('modalTitle');
+            const deadlineGroup = document.getElementById('deadlineGroup');
+            const startTimeGroup = document.getElementById('startTimeGroup');
+            const durationGroup = document.getElementById('durationGroup');
+            
+            if (type === 'activity') {
+                modalTitle.textContent = 'Редактирование активности';
+                deadlineGroup.style.display = 'none';
+                startTimeGroup.style.display = 'block';
+                durationGroup.style.display = 'block';
+                document.getElementById('editStartTime').value = item.startTime ? new Date(item.startTime).toISOString().slice(0, 16) : '';
+                document.getElementById('editDuration').value = item.duration || '';
+                
+                // Remove month and parent groups if exist
+                const monthGroup = document.getElementById('editMonthGroup');
+                if (monthGroup) monthGroup.remove();
+                const parentGroup = document.getElementById('editParentGroup');
+                if (parentGroup) parentGroup.remove();
+            } else {
+                modalTitle.textContent = `Редактирование ${type === 'task' ? 'задачи' : 'цели'}`;
+                deadlineGroup.style.display = 'block';
+                startTimeGroup.style.display = 'none';
+                durationGroup.style.display = 'none';
+                document.getElementById('editDeadline').value = item.deadline || '';
+                if (type === 'month') {
+                    // Add month select if not exists
+                    let monthGroup = document.getElementById('editMonthGroup');
+                    if (!monthGroup) {
+                        monthGroup = document.createElement('div');
+                        monthGroup.id = 'editMonthGroup';
+                        monthGroup.className = 'form-group';
+                        monthGroup.innerHTML = `
+                            <label for="editMonth">Месяц:</label>
+                            <select id="editMonth">
+                                <option value="january">Январь</option>
+                                <option value="february">Февраль</option>
+                                <option value="march">Март</option>
+                                <option value="april">Апрель</option>
+                                <option value="may">Май</option>
+                                <option value="june">Июнь</option>
+                                <option value="july">Июль</option>
+                                <option value="august">Август</option>
+                                <option value="september">Сентябрь</option>
+                                <option value="october">Октябрь</option>
+                                <option value="november">Ноябрь</option>
+                                <option value="december">Декабрь</option>
+                            </select>
+                        `;
+                        document.getElementById('editForm').insertBefore(monthGroup, deadlineGroup);
+                    }
+                    document.getElementById('editMonth').value = item.month || '';
+                } else {
+                    // Remove month group if exists
+                    const monthGroup = document.getElementById('editMonthGroup');
+                    if (monthGroup) monthGroup.remove();
+                }
+                if (type === 'task') {
+                    // Add parent goal select if not exists
+                    let parentGroup = document.getElementById('editParentGroup');
+                    if (!parentGroup) {
+                        parentGroup = document.createElement('div');
+                        parentGroup.id = 'editParentGroup';
+                        parentGroup.className = 'form-group';
+                        parentGroup.innerHTML = `
+                            <label for="editParentGoal">Родительская цель (месяц):</label>
+                            <select id="editParentGoal">
+                                <option value="">Без родителя</option>
+                                ${goals.filter(g => g.type === 'month').map(g => `<option value="${g.id}">${g.title} (${g.month})</option>`).join('')}
+                            </select>
+                        `;
+                        document.getElementById('editForm').insertBefore(parentGroup, deadlineGroup);
+                    }
+                    document.getElementById('editParentGoal').value = item.parentId || '';
+                } else {
+                    // Remove parent group if exists
+                    const parentGroup = document.getElementById('editParentGroup');
+                    if (parentGroup) parentGroup.remove();
+                }
+            }
+            
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            editingItem = null;
+            editingType = null;
+        }
+
+        function saveEdit(event) {
+            event.preventDefault();
+            
+            if (!editingItem) return;
+            
+            editingItem.title = document.getElementById('editTitle').value;
+            editingItem.description = document.getElementById('editDescription').value;
+            
+            if (editingType === 'activity') {
+                const newStartTime = document.getElementById('editStartTime').value;
+                editingItem.startTime = newStartTime;
+                editingItem.duration = document.getElementById('editDuration').value;
+                
+                // Update dayOfWeek based on new date
+                if (newStartTime) {
+                    const date = new Date(newStartTime);
+                    const dayIndex = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+                    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                    editingItem.dayOfWeek = dayNames[dayIndex];
+                    editingItem.date = date.toISOString().split('T')[0];
+                }
+            } else {
+                editingItem.deadline = document.getElementById('editDeadline').value;
+                if (editingType === 'month') {
+                    editingItem.month = document.getElementById('editMonth').value;
+                }
+                if (editingType === 'task') {
+                    editingItem.parentId = document.getElementById('editParentGoal').value || null;
+                }
+            }
+            
+            localStorage.setItem(editingType === 'activity' ? 'activities' : editingType === 'task' ? 'tasks' : 'goals', 
+                               JSON.stringify(editingType === 'activity' ? activities : editingType === 'task' ? tasks : goals));
+            
+            closeEditModal();
+            renderBoard();
+        }
+
+        function completeItem(id, type) {
+            let item;
+            let array;
+            
+            if (type === 'activity') {
+                item = activities.find(a => a.id === id);
+                array = activities;
+            } else if (type === 'task') {
+                item = tasks.find(t => t.id === id);
+                array = tasks;
+            } else {
+                item = goals.find(g => g.id === id);
+                array = goals;
+            }
+            
+            if (!item) return;
+            
+            item.status = item.status === 'completed' ? 'active' : 'completed';
+            localStorage.setItem(type === 'activity' ? 'activities' : type === 'task' ? 'tasks' : 'goals', JSON.stringify(array));
+            renderBoard();
+        }
+
+        function deleteItem(id, type) {
+            if (!confirm('Вы уверены, что хотите удалить этот элемент?')) return;
+            
+            let array;
+            
+            if (type === 'activity') {
+                array = activities;
+                activities = activities.filter(a => a.id !== id);
+            } else if (type === 'task') {
+                array = tasks;
+                tasks = tasks.filter(t => t.id !== id);
+            } else {
+                array = goals;
+                goals = goals.filter(g => g.id !== id);
+            }
+            
+            localStorage.setItem(type === 'activity' ? 'activities' : type === 'task' ? 'tasks' : 'goals', JSON.stringify(array));
+            renderBoard();
+        }
+
+        function updateStats() {
+            document.getElementById('goals-count').textContent = goals.length;
+            document.getElementById('tasks-count').textContent = tasks.length;
+            document.getElementById('activities-count').textContent = activities.length;
+            
+            const totalHours = activities.reduce((sum, a) => sum + (parseFloat(a.duration) || 0), 0);
+            document.getElementById('time-spent').textContent = `${totalHours}ч`;
+        }
+
+        // Drag and drop
+        let draggedItem = null;
+        let draggedType = null;
+
+        function dragStart(e, id, type) {
+            console.log('Drag start:', id, type);
+            draggedItem = id;
+            draggedType = type;
+            e.dataTransfer.effectAllowed = 'move';
+            e.target.classList.add('dragging');
+        }
+
+        document.addEventListener('dragend', (e) => {
+            e.target.classList.remove('dragging');
+        });
+
+        function allowDrop(e) {
+            e.preventDefault();
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            console.log('=== DROP EVENT START ===');
+            console.log('Drop target element:', e.target);
+            console.log('Drop target classes:', e.target.className);
+            console.log('Dragged item:', draggedItem, 'Type:', draggedType);
+            
+            // Try multiple ways to find the target slot
+            let targetSlot = null;
+            
+            // Method 1: Direct closest on target
+            targetSlot = e.target.closest('.time-slot');
+            console.log('Method 1 - closest on target:', targetSlot);
+            
+            // Method 2: If target is a card, find its parent slot
+            if (!targetSlot && e.target.closest('.card')) {
+                const card = e.target.closest('.card');
+                targetSlot = card.closest('.time-slot');
+                console.log('Method 2 - card parent slot:', targetSlot);
+            }
+            
+            // Method 3: Check if target is slot-activities div
+            if (!targetSlot && e.target.classList.contains('slot-activities')) {
+                targetSlot = e.target.closest('.time-slot');
+                console.log('Method 3 - slot-activities parent:', targetSlot);
+            }
+            
+            // Method 5: Use mouse coordinates to find exact slot
+            if (!targetSlot) {
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+                console.log('Mouse coordinates:', mouseX, mouseY);
+                
+                const slots = document.querySelectorAll('.time-slot');
+                for (const slot of slots) {
+                    const rect = slot.getBoundingClientRect();
+                    console.log('Slot rect:', slot.querySelector('.time-label').textContent, rect);
+                    if (mouseX >= rect.left && mouseX <= rect.right && 
+                        mouseY >= rect.top && mouseY <= rect.bottom) {
+                        targetSlot = slot;
+                        console.log('Method 5 - mouse coordinate match:', targetSlot);
+                        break;
+                    }
+                }
+            }
+            
+            console.log('Final target slot:', targetSlot);
+            
+            if (targetSlot) {
+                const timeLabel = targetSlot.querySelector('.time-label');
+                console.log('Time label element:', timeLabel);
+                
+                if (timeLabel) {
+                    const timeText = timeLabel.textContent.trim();
+                    console.log('Time label text:', timeText);
+                    
+                    const hourMatch = timeText.match(/(\d+):/);
+                    if (hourMatch) {
+                        const hour = parseInt(hourMatch[1]);
+                        console.log('Parsed hour:', hour);
+                        
+                        const activity = activities.find(a => a.id === draggedItem);
+                        console.log('Found activity:', activity);
+                        
+                        if (activity && activity.startTime) {
+                            const date = new Date(activity.startTime);
+                            date.setHours(hour, 0, 0, 0); // Set hours, minutes, seconds, milliseconds
+                            // Format as local datetime string
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const hoursStr = String(date.getHours()).padStart(2, '0');
+                            const minutesStr = String(date.getMinutes()).padStart(2, '0');
+                            activity.startTime = `${year}-${month}-${day}T${hoursStr}:${minutesStr}`;
+                            
+                            // Update dayOfWeek if date changed
+                            const dayIndex = date.getDay();
+                            const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                            activity.dayOfWeek = dayNames[dayIndex];
+                            activity.date = `${year}-${month}-${day}`;
+                            
+                            console.log('Updated activity time to:', activity.startTime, 'day:', activity.dayOfWeek);
+                        } else {
+                            console.log('Activity not found or no startTime');
+                        }
+                    } else {
+                        console.log('Could not parse hour from time text');
+                    }
+                } else {
+                    console.log('No time label found in target slot');
+                }
+            } else {
+                console.log('No target slot found at all');
+            }
+            
+            // Save and re-render
+            localStorage.setItem('goals', JSON.stringify(goals));
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            localStorage.setItem('activities', JSON.stringify(activities));
+            renderBoard();
+            
+            console.log('=== DROP EVENT END ===');
+        }
+
+        document.getElementById('addModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddModal();
+            }
+        });
+
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+
+        function renderWeekOverview() {
+            console.log('renderWeekOverview called, weekViewMode:', weekViewMode);
+            // Create main container
+            const overview = document.createElement('div');
+            overview.className = 'week-overview';
+
+            // Left panel - Tasks hierarchy
+            const leftPanel = document.createElement('div');
+            leftPanel.className = 'overview-left-panel';
+            leftPanel.innerHTML = '<h3>Задачи недели</h3><button class="add-task-btn" onclick="showAddForm(\'task\')">+ Добавить задачу</button>';
+
+            // Add view mode buttons
+            leftPanel.innerHTML += `
+                <div style="margin-top: 15px;">
+                    <button class="level-btn ${weekViewMode === 'day' ? 'active' : ''}" onclick="setWeekViewMode('day')" style="margin-right: 10px;">День</button>
+                    <button class="level-btn ${weekViewMode === 'week' ? 'active' : ''}" onclick="setWeekViewMode('week')">Неделя</button>
+                </div>
+            `;
+
+            if (weekViewMode === 'day') {
+                console.log('Adding single task selector for day view');
+                leftPanel.innerHTML += `
+                    <div style="margin-top: 15px;">
+                        <label style="font-weight: bold;">Выберите задачу (одну):</label>
+                        <div id="task-selector" style="margin-top: 5px; max-height: 400px; overflow-y: auto;">
+                            ${tasks.map(t => `
+                                <div class="task-selector-item ${selectedWeekTaskIds.includes(t.id) ? 'selected' : ''}" 
+                                     onclick="toggleWeekTask('${t.id}')">
+                                    <div class="task-title">${t.title}</div>
+                                    <div class="task-desc">${t.description || ''}</div>
+                                    ${t.deadline ? `<div class="task-time">Дедлайн: ${t.deadline}</div>` : ''}
+                                    ${t.parentId ? `<div class="task-time">Родитель: ${goals.find(g => g.id === t.parentId)?.title || 'Неизвестно'}</div>` : ''}
+                                    <div class="task-status">Статус: ${t.status === 'completed' ? 'Завершена' : 'Активна'}</div>
+                                    <div style="margin-top: 10px;">
+                                        <button onclick="event.stopPropagation(); editItem('${t.id}', 'task')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
+                                        <button onclick="event.stopPropagation(); deleteItem('${t.id}', 'task')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (weekViewMode === 'week') {
+                console.log('Adding task selector for week view');
+                leftPanel.innerHTML += `
+                    <div style="margin-top: 15px;">
+                        <label style="font-weight: bold;">Выберите задачи (несколько):</label>
+                        <div id="task-selector" style="margin-top: 5px; max-height: 400px; overflow-y: auto;">
+                            ${tasks.map(t => `
+                                <div class="task-selector-item ${selectedWeekTaskIds.includes(t.id) ? 'selected' : ''}" 
+                                     onclick="toggleWeekTask('${t.id}')">
+                                    <div class="task-title">${t.title}</div>
+                                    <div class="task-desc">${t.description || ''}</div>
+                                    ${t.deadline ? `<div class="task-time">Дедлайн: ${t.deadline}</div>` : ''}
+                                    ${t.parentId ? `<div class="task-time">Родитель: ${goals.find(g => g.id === t.parentId)?.title || 'Неизвестно'}</div>` : ''}
+                                    <div class="task-status">Статус: ${t.status === 'completed' ? 'Завершена' : 'Активна'}</div>
+                                    <div style="margin-top: 10px;">
+                                        <button onclick="event.stopPropagation(); editItem('${t.id}', 'task')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
+                                        <button onclick="event.stopPropagation(); deleteItem('${t.id}', 'task')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Right panel - Activities for selected day/week
+            const rightPanel = document.createElement('div');
+            rightPanel.className = 'overview-right-panel';
+            rightPanel.id = 'task-activities-panel';
+
+            overview.appendChild(leftPanel);
+            overview.appendChild(rightPanel);
+            board.appendChild(overview);
+
+            // Show activities based on current mode
+            setWeekViewMode(weekViewMode);
+        }
+
+        function showDayActivities() {
+            const panel = document.getElementById('task-activities-panel');
+            if (!panel) return;
+
+            const dayNames = {
+                'monday': 'Понедельник',
+                'tuesday': 'Вторник',
+                'wednesday': 'Среда',
+                'thursday': 'Четверг',
+                'friday': 'Пятница',
+                'saturday': 'Суббота',
+                'sunday': 'Воскресенье'
+            };
+
+            // Add day selector
+            const daySelectorHTML = `
+                <div style="margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <div style="padding: 8px 16px; background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border-radius: 8px; font-weight: bold; color: #4facfe; border: 1px solid rgba(79, 172, 254, 0.3); font-size: 14px;">
+                        Выбран: ${dayNames[selectedDay]}
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                        <button class="day-btn ${selectedDay === 'monday' ? 'active' : ''}" onclick="selectDay('monday')">Пн</button>
+                        <button class="day-btn ${selectedDay === 'tuesday' ? 'active' : ''}" onclick="selectDay('tuesday')">Вт</button>
+                        <button class="day-btn ${selectedDay === 'wednesday' ? 'active' : ''}" onclick="selectDay('wednesday')">Ср</button>
+                        <button class="day-btn ${selectedDay === 'thursday' ? 'active' : ''}" onclick="selectDay('thursday')">Чт</button>
+                        <button class="day-btn ${selectedDay === 'friday' ? 'active' : ''}" onclick="selectDay('friday')">Пт</button>
+                        <button class="day-btn ${selectedDay === 'saturday' ? 'active' : ''}" onclick="selectDay('saturday')">Сб</button>
+                        <button class="day-btn ${selectedDay === 'sunday' ? 'active' : ''}" onclick="selectDay('sunday')">Вс</button>
+                    </div>
+                </div>
+            `;
+
+            panel.innerHTML = `${daySelectorHTML}<h3>Активности на ${dayNames[selectedDay]}${selectedWeekTaskIds.length > 0 ? ` (задачи: ${selectedWeekTaskIds.map(id => tasks.find(t => t.id === id)?.title || 'Неизвестная задача').join(', ')})` : ''}</h3><button class="add-task-btn" onclick="showAddForm('activity')">+ Добавить активность</button>`;
+
+            // Show activities only for the selected day and selected tasks
+            let dayActivities = activities.filter(a => a.dayOfWeek === selectedDay);
+            
+            // Filter by selected tasks if any are selected
+            if (selectedWeekTaskIds.length > 0) {
+                dayActivities = dayActivities.filter(a => selectedWeekTaskIds.includes(a.taskId));
+            }
+
+            if (dayActivities.length === 0) {
+                panel.innerHTML += '<p>Нет активностей на этот день</p>';
+                return;
+            }
+
+            // Group activities by task for better organization
+            const activitiesByTask = {};
+            dayActivities.forEach(activity => {
+                const taskId = activity.taskId || 'no-task';
+                const taskTitle = taskId !== 'no-task' ? (tasks.find(t => t.id === taskId)?.title || 'Неизвестная задача') : 'Без задачи';
+                if (!activitiesByTask[taskTitle]) activitiesByTask[taskTitle] = [];
+                activitiesByTask[taskTitle].push(activity);
+            });
+
+            // Display activities grouped by task
+            Object.keys(activitiesByTask).forEach(taskTitle => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'overview-hour-group';
+                taskDiv.innerHTML = `<h4>${taskTitle}</h4>`;
+
+                activitiesByTask[taskTitle].forEach(activity => {
+                    const activityCard = document.createElement('div');
+                    activityCard.className = 'overview-activity-card';
+                    activityCard.innerHTML = `
+                        <div class="activity-title">${activity.title}</div>
+                        <div class="activity-desc">${activity.description || ''}</div>
+                        <div class="activity-time">Время: ${activity.startTime ? new Date(activity.startTime).toLocaleTimeString() : 'Не указано'}</div>
+                        <div class="activity-time">Длительность: ${activity.duration}ч</div>
+                        <div class="activity-status">Статус: ${activity.status === 'completed' ? 'Завершена' : 'Активна'}</div>
+                        <div style="margin-top: 10px;">
+                            <button onclick="editItem('${activity.id}', 'activity')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
+                            <button onclick="deleteItem('${activity.id}', 'activity')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️</button>
+                        </div>
+                    `;
+                    taskDiv.appendChild(activityCard);
+                });
+
+                panel.appendChild(taskDiv);
+            });
+        }
+
+        function showWeekActivities() {
+            const panel = document.getElementById('task-activities-panel');
+            if (!panel) return;
+            
+            // Get activities for selected tasks or all activities if no tasks selected
+            let weekActivities;
+            let headerText = 'Активности на всю неделю';
+            
+            if (selectedWeekTaskIds.length > 0) {
+                weekActivities = activities.filter(a => selectedWeekTaskIds.includes(a.taskId));
+                const selectedTaskTitles = selectedWeekTaskIds.map(id => tasks.find(t => t.id === id)?.title || 'Неизвестная задача').join(', ');
+                headerText = `Активности для задач: ${selectedTaskTitles}`;
+            } else {
+                weekActivities = activities;
+            }
+            
+            panel.innerHTML = `<h3>${headerText}</h3><button class="add-task-btn" onclick="showAddForm('activity')">+ Добавить активность</button>`;
+            
+            if (weekActivities.length === 0) {
+                const message = selectedWeekTaskIds.length > 0 ? 'Нет активностей для выбранных задач' : 'Нет активностей';
+                panel.innerHTML += `<p>${message}</p>`;
+                return;
+            }
+            
+            // Group activities by day
+            const activitiesByDay = {};
+            weekActivities.forEach(activity => {
+                const day = activity.dayOfWeek || 'unknown';
+                if (!activitiesByDay[day]) activitiesByDay[day] = [];
+                activitiesByDay[day].push(activity);
+            });
+            
+            // Display activities grouped by day
+            const dayNames = {
+                'monday': 'Понедельник',
+                'tuesday': 'Вторник',
+                'wednesday': 'Среда',
+                'thursday': 'Четверг',
+                'friday': 'Пятница',
+                'saturday': 'Суббота',
+                'sunday': 'Воскресенье'
+            };
+            
+            const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            
+            dayOrder.forEach(day => {
+                if (activitiesByDay[day]) {
+                    const dayDiv = document.createElement('div');
+                    dayDiv.className = 'overview-hour-group';
+                    dayDiv.innerHTML = `<h4>${dayNames[day]}</h4>`;
+                    
+                    activitiesByDay[day].forEach(activity => {
+                        const activityCard = document.createElement('div');
+                        activityCard.className = 'overview-activity-card';
+                        activityCard.innerHTML = `
+                            <div class="activity-title">${activity.title}</div>
+                            <div class="activity-desc">${activity.description || ''}</div>
+                            <div class="activity-time">Время: ${activity.startTime ? new Date(activity.startTime).toLocaleTimeString() : 'Не указано'}</div>
+                            <div class="activity-time">Длительность: ${activity.duration}ч</div>
+                            <div class="activity-status">Статус: ${activity.status === 'completed' ? 'Завершена' : 'Активна'}</div>
+                            <div style="margin-top: 10px;">
+                                <button onclick="editItem('${activity.id}', 'activity')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
+                                <button onclick="deleteItem('${activity.id}', 'activity')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️</button>
+                            </div>
+                        `;
+                        dayDiv.appendChild(activityCard);
+                    });
+                    
+                    panel.appendChild(dayDiv);
+                }
+            });
+        }
+
+        function showTaskActivities(taskId) {
+            selectedTaskId = taskId;
+            const panel = document.getElementById('task-activities-panel');
+            if (!panel) return;
+            
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            panel.innerHTML = `<h3>Активности для задачи "${task.title}"</h3><button class="add-task-btn" onclick="showAddForm('activity')">+ Добавить активность</button>`;
+            
+            const taskActivities = activities.filter(a => a.taskId === taskId);
+            
+            if (taskActivities.length === 0) {
+                panel.innerHTML += '<p>Нет активностей для этой задачи</p>';
+                return;
+            }
+            
+            // Group activities by day
+            const activitiesByDay = {};
+            taskActivities.forEach(activity => {
+                const day = activity.dayOfWeek || 'unknown';
+                if (!activitiesByDay[day]) activitiesByDay[day] = [];
+                activitiesByDay[day].push(activity);
+            });
+            
+            // Display activities grouped by day
+            const dayNames = {
+                'monday': 'Понедельник',
+                'tuesday': 'Вторник',
+                'wednesday': 'Среда',
+                'thursday': 'Четверг',
+                'friday': 'Пятница',
+                'saturday': 'Суббота',
+                'sunday': 'Воскресенье'
+            };
+            
+            Object.keys(activitiesByDay).forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'overview-hour-group';
+                dayDiv.innerHTML = `<h4>${dayNames[day] || day}</h4>`;
+                
+                activitiesByDay[day].forEach(activity => {
+                    const activityCard = document.createElement('div');
+                    activityCard.className = 'overview-activity-card';
+                    activityCard.innerHTML = `
+                        <div class="activity-title">${activity.title}</div>
+                        <div class="activity-desc">${activity.description || ''}</div>
+                        <div class="activity-time">Время: ${activity.startTime ? new Date(activity.startTime).toLocaleTimeString() : 'Не указано'}</div>
+                        <div class="activity-time">Длительность: ${activity.duration}ч</div>
+                        <div class="activity-status">Статус: ${activity.status === 'completed' ? 'Завершена' : 'Активна'}</div>
+                        <div style="margin-top: 10px;">
+                            <button onclick="editItem('${activity.id}', 'activity')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
+                            <button onclick="deleteItem('${activity.id}', 'activity')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️</button>
+                        </div>
+                    `;
+                    dayDiv.appendChild(activityCard);
+                });
+                
+                panel.appendChild(dayDiv);
+            });
+        }
+
+        // Initialize
+        selectLevel('year');
+        updateCurrentDate();
+        
+        // Check for URL parameters to create items
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Check for single task
+        if (urlParams.has('task')) {
+            const title = urlParams.get('task');
+            const description = urlParams.get('desc') || '';
+            const deadline = urlParams.get('deadline') || '';
+            const parentId = urlParams.get('parent') || null;
+            
+            const task = {
+                id: Date.now().toString(),
+                type: 'task',
+                parentId: parentId,
+                title: title,
+                description: description,
+                deadline: deadline,
+                status: 'active'
+            };
+            tasks.push(task);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            
+            // Clear URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
+            // Switch to activity view to show the task
+            selectLevel('activity');
+            renderBoard();
+        }
+        
+        // Check for JSON data
+        if (urlParams.has('data')) {
+            try {
+                const data = JSON.parse(urlParams.get('data'));
+                if (data.task) {
+                    // Single task from JSON
+                    const task = {
+                        id: Date.now().toString(),
+                        type: 'task',
+                        parentId: data.parent || null,
+                        title: data.task,
+                        description: data.desc || '',
+                        deadline: data.deadline || '',
+                        status: 'active'
+                    };
+                    tasks.push(task);
+                    localStorage.setItem('tasks', JSON.stringify(tasks));
+                } else if (Array.isArray(data)) {
+                    // Multiple tasks from JSON array
+                    data.forEach(item => {
+                        const task = {
+                            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                            type: 'task',
+                            parentId: item.parent || null,
+                            title: item.task,
+                            description: item.desc || '',
+                            deadline: item.deadline || '',
+                            status: 'active'
+                        };
+                        tasks.push(task);
+                    });
+                    localStorage.setItem('tasks', JSON.stringify(tasks));
+                }
+                
+                // Clear URL parameters
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Switch to activity view to show the tasks
+                selectLevel('activity');
+                renderBoard();
+            } catch (e) {
+                console.error('Invalid JSON in URL:', e);
+            }
+        }
+    </script>
+</body>
+</html>
