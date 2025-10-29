@@ -1984,7 +1984,12 @@
                     <div style="margin-top: 15px;">
                         <label style="font-weight: bold;">Выберите задачу (одну):</label>
                         <div id="task-selector" style="margin-top: 5px; max-height: 400px; overflow-y: auto;">
-                            ${tasks.map(t => `
+                            ${tasks.map(t => {
+                                const taskActivities = activities.filter(a => a.taskId === t.id);
+                                const completedActivities = taskActivities.filter(a => a.status === 'completed').length;
+                                const totalActivities = taskActivities.length;
+                                const progressText = totalActivities > 0 ? `${completedActivities}/${totalActivities} done` : '';
+                                return `
                                 <div class="task-selector-item ${selectedWeekTaskIds.includes(t.id) ? 'selected' : ''}" 
                                      onclick="toggleWeekTask('${t.id}')">
                                     <div class="task-title">${t.title}</div>
@@ -1992,12 +1997,14 @@
                                     ${t.deadline ? `<div class="task-time">Дедлайн: ${t.deadline}</div>` : ''}
                                     ${t.parentId ? `<div class="task-time">Родитель: ${goals.find(g => g.id === t.parentId)?.title || 'Неизвестно'}</div>` : ''}
                                     <div class="task-status">Статус: ${t.status === 'completed' ? 'Завершена' : 'Активна'}</div>
+                                    ${progressText ? `<div class="task-progress" style="color: #10b981; font-weight: bold; margin-top: 5px;">${progressText}</div>` : ''}
                                     <div style="margin-top: 10px;">
                                         <button onclick="event.stopPropagation(); editItem('${t.id}', 'task')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
                                         <button onclick="event.stopPropagation(); deleteItem('${t.id}', 'task')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️</button>
                                     </div>
                                 </div>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                 `;
@@ -2007,7 +2014,12 @@
                     <div style="margin-top: 15px;">
                         <label style="font-weight: bold;">Выберите задачи (несколько):</label>
                         <div id="task-selector" style="margin-top: 5px; max-height: 400px; overflow-y: auto;">
-                            ${tasks.map(t => `
+                            ${tasks.map(t => {
+                                const taskActivities = activities.filter(a => a.taskId === t.id);
+                                const completedActivities = taskActivities.filter(a => a.status === 'completed').length;
+                                const totalActivities = taskActivities.length;
+                                const progressText = totalActivities > 0 ? `${completedActivities}/${totalActivities} done` : '';
+                                return `
                                 <div class="task-selector-item ${selectedWeekTaskIds.includes(t.id) ? 'selected' : ''}" 
                                      onclick="toggleWeekTask('${t.id}')">
                                     <div class="task-title">${t.title}</div>
@@ -2015,12 +2027,14 @@
                                     ${t.deadline ? `<div class="task-time">Дедлайн: ${t.deadline}</div>` : ''}
                                     ${t.parentId ? `<div class="task-time">Родитель: ${goals.find(g => g.id === t.parentId)?.title || 'Неизвестно'}</div>` : ''}
                                     <div class="task-status">Статус: ${t.status === 'completed' ? 'Завершена' : 'Активна'}</div>
+                                    ${progressText ? `<div class="task-progress" style="color: #10b981; font-weight: bold; margin-top: 5px;">${progressText}</div>` : ''}
                                     <div style="margin-top: 10px;">
                                         <button onclick="event.stopPropagation(); editItem('${t.id}', 'task')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
                                         <button onclick="event.stopPropagation(); deleteItem('${t.id}', 'task')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️</button>
                                     </div>
                                 </div>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                 `;
@@ -2111,6 +2125,7 @@
                         <div class="activity-time">Длительность: ${activity.duration}ч</div>
                         <div class="activity-status">Статус: ${activity.status === 'completed' ? 'Завершена' : 'Активна'}</div>
                         <div style="margin-top: 10px;">
+                            <button onclick="event.stopPropagation(); completeItem('${activity.id}', 'activity')" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✓</button>
                             <button onclick="editItem('${activity.id}', 'activity')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
                             <button onclick="deleteItem('${activity.id}', 'activity')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️</button>
                         </div>
@@ -2183,6 +2198,7 @@
                             <div class="activity-time">Длительность: ${activity.duration}ч</div>
                             <div class="activity-status">Статус: ${activity.status === 'completed' ? 'Завершена' : 'Активна'}</div>
                             <div style="margin-top: 10px;">
+                                <button onclick="event.stopPropagation(); completeItem('${activity.id}', 'activity')" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✓</button>
                                 <button onclick="editItem('${activity.id}', 'activity')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
                                 <button onclick="deleteItem('${activity.id}', 'activity')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️</button>
                             </div>
@@ -2246,6 +2262,7 @@
                         <div class="activity-time">Длительность: ${activity.duration}ч</div>
                         <div class="activity-status">Статус: ${activity.status === 'completed' ? 'Завершена' : 'Активна'}</div>
                         <div style="margin-top: 10px;">
+                            <button onclick="event.stopPropagation(); completeItem('${activity.id}', 'activity')" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✓</button>
                             <button onclick="editItem('${activity.id}', 'activity')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
                             <button onclick="deleteItem('${activity.id}', 'activity')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️</button>
                         </div>
