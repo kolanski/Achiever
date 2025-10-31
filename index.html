@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎯 Achiever - Управление целями</title>
+    <title>🎯 Achiever - Управление целями + Уверенность</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -17,6 +17,12 @@
             --success: #10b981;
             --warning: #f59e0b;
             --error: #ef4444;
+            --confidence-primary: #8b5cf6;
+            --confidence-secondary: #ec4899;
+            --courage: #ef4444;
+            --ownership: #3b82f6;
+            --repetition: #10b981;
+            --evidence: #f59e0b;
             --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
@@ -1006,12 +1012,134 @@
                 width: 100%;
             }
         }
+
+        /* Confidence-Enhanced Styles */
+        .confidence-score {
+            background: linear-gradient(135deg, var(--confidence-primary), var(--confidence-secondary));
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 8px;
+        }
+
+        .fear-indicator {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--courage);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin: 4px 0;
+            display: inline-block;
+        }
+
+        .core-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            margin: 2px;
+            display: inline-block;
+            color: white;
+        }
+
+        .core-courage { background: var(--courage); }
+        .core-ownership { background: var(--ownership); }
+        .core-repetition { background: var(--repetition); }
+        .core-evidence { background: var(--evidence); }
+
+        .confidence-panel {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+
+        .state-tool {
+            background: white;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .state-tool:hover {
+            background: var(--confidence-primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .evidence-log {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 8px;
+            padding: 8px;
+            margin: 4px 0;
+            font-size: 12px;
+        }
+
+        .confidence-ritual {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .breathing-circle {
+            width: 40px;
+            height: 40px;
+            background: var(--confidence-primary);
+            border-radius: 50%;
+            margin: 8px auto;
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        .confidence-toggle {
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid var(--confidence-primary);
+            color: var(--confidence-primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .confidence-toggle:hover {
+            background: var(--confidence-primary);
+            color: white;
+        }
+
+        .confidence-toggle.active {
+            background: var(--confidence-primary);
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1><i class="fas fa-bullseye"></i> Achiever</h1>
-        
+
+        <div style="text-align: center; margin-bottom: 15px;" id="confidenceControls">
+            <button id="confidenceToggle" class="confidence-toggle" onclick="toggleConfidenceMode()">
+                <i class="fas fa-brain"></i> Режим уверенности: <span id="confidenceModeText">Выкл</span>
+            </button>
+        </div>
+
         <div class="level-selector">
             <button class="level-btn active" onclick="selectLevel('year')">Год</button>
             <button class="level-btn" onclick="selectLevel('month')">Месяц</button>
@@ -1057,6 +1185,18 @@
             <div class="stat-item">
                 <div class="stat-number" id="time-spent">0ч</div>
                 <div class="stat-label">Времени</div>
+            </div>
+            <div class="stat-item" id="confidence-stats" style="display: none;">
+                <div class="stat-number" id="confidence-score" style="color: var(--confidence-primary);">0</div>
+                <div class="stat-label">Уверенность</div>
+            </div>
+            <div class="stat-item" id="courage-stats" style="display: none;">
+                <div class="stat-number" id="courage-count" style="color: var(--courage);">0</div>
+                <div class="stat-label">Смелость</div>
+            </div>
+            <div class="stat-item" id="evidence-stats" style="display: none;">
+                <div class="stat-number" id="evidence-count" style="color: var(--evidence);">0</div>
+                <div class="stat-label">Доказательств</div>
             </div>
         </div>
     <div class="modal" id="addModal" style="display: none;">
@@ -1138,6 +1278,27 @@
         let editingItem = null;
         let editingType = null;
 
+        // Confidence Data Model
+        let confidenceMode = false;
+        let confidenceData = JSON.parse(localStorage.getItem('confidenceData') || JSON.stringify({
+            score: 0,
+            courage: 0,
+            ownership: 0,
+            repetition: 0,
+            evidence: 0,
+            socialWins: 0,
+            streak: 0,
+            lastActive: null,
+            activities: [],
+            evidenceLog: [],
+            coreGoals: {
+                courage: [],
+                ownership: [],
+                repetition: [],
+                evidence: []
+            }
+        }));
+
         const levelNames = {
             year: 'Год',
             month: 'Месяц', 
@@ -1166,6 +1327,40 @@
         let weekViewMode = localStorage.getItem('weekViewMode') || 'week'; // day, week - for week overview
         console.log('Initial weekViewMode:', weekViewMode);
         let selectedTaskId = null; // for week view - currently selected task
+
+        // Confidence Constants
+        const CORE_TYPES = {
+            courage: 'courage',
+            ownership: 'ownership',
+            repetition: 'repetition',
+            evidence: 'evidence'
+        };
+
+        const CORE_COLORS = {
+            courage: '#ef4444',
+            ownership: '#3b82f6',
+            repetition: '#10b981',
+            evidence: '#f59e0b'
+        };
+
+        const CORE_LABELS = {
+            courage: 'Смелость',
+            ownership: 'Ответственность',
+            repetition: 'Повторение',
+            evidence: 'Доказательства'
+        };
+
+        const CATEGORY_LABELS = {
+            social: 'Социальная уверенность',
+            professional: 'Профессиональная уверенность',
+            personal: 'Личная уверенность',
+            leadership: 'Лидерская уверенность',
+            communication: 'Коммуникативная уверенность'
+        };
+
+        function getCategoryLabel(category) {
+            return CATEGORY_LABELS[category] || category;
+        }
         let selectedWeekTaskIds = JSON.parse(localStorage.getItem('selectedWeekTaskIds') || '[]'); // for week view - selected tasks for filtering
 
         function selectLevel(level) {
@@ -1416,13 +1611,23 @@
             
             card.innerHTML = `
                 <div class="card-content">
-                    <div class="card-title">${item.title}</div>
+                    <div class="card-title">
+                        ${item.title}
+                        ${confidenceMode && item.confidenceScore ? `<span class="confidence-score">${item.confidenceScore}/10</span>` : ''}
+                    </div>
                     <div class="card-desc">${item.description || ''}</div>
                     ${item.month ? `<div class="card-desc">Месяц: ${item.month}</div>` : ''}
                     ${item.parentId ? `<div class="card-desc">Родитель: ${goals.find(g => g.id === item.parentId)?.title || 'Неизвестно'}</div>` : ''}
                     ${item.deadline ? `<div class="card-desc">Дедлайн: ${item.deadline}</div>` : ''}
                     ${item.startTime ? `<div class="card-desc">Время: ${new Date(item.startTime).toLocaleTimeString()}</div>` : ''}
                     ${item.duration ? `<div class="card-desc">Длительность: ${item.duration}ч</div>` : ''}
+
+                    <!-- Confidence Indicators (only show in confidence mode) -->
+                    ${confidenceMode ? `
+                        ${item.fearBased ? '<div class="fear-indicator">😱 Цель из зоны комфорта</div>' : ''}
+                        ${item.coreType ? `<div class="core-badge core-${item.coreType}">${CORE_LABELS[item.coreType]}</div>` : ''}
+                        ${item.category ? `<div style="font-size: 11px; color: #666; margin: 2px 0;">📂 ${getCategoryLabel(item.category)}</div>` : ''}
+                    ` : ''}
                 </div>
                 ${!isReadOnly ? `
                 <div class="card-actions">
@@ -1462,7 +1667,7 @@
                 addDeadlineGroup.style.display = 'none';
                 addStartTimeGroup.style.display = 'block';
                 addDurationGroup.style.display = 'block';
-                
+
                 // Set default time for selected day
                 const today = new Date();
                 const dayIndex = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(selectedDay);
@@ -1485,6 +1690,45 @@
                     </select>
                 `;
                 document.getElementById('addForm').insertBefore(taskSelect, addStartTimeGroup);
+
+                // Add confidence fields for activities if in confidence mode
+                if (confidenceMode) {
+                    const confidenceFields = document.createElement('div');
+                    confidenceFields.className = 'confidence-panel';
+                    confidenceFields.innerHTML = `
+                        <h4 style="margin: 10px 0; color: var(--confidence-primary);">
+                            <i class="fas fa-brain"></i> Параметры уверенности активности
+                        </h4>
+
+                        <div class="form-group">
+                            <label for="addActivityCoreType">CORE тип активности:</label>
+                            <select id="addActivityCoreType" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="">Обычная активность</option>
+                                <option value="courage">🔥 Смелость - активность требует мужества</option>
+                                <option value="ownership">🛡️ Ответственность - взять ответственность</option>
+                                <option value="repetition">🔄 Повторение - практика навыка</option>
+                                <option value="evidence">🏆 Доказательства - создать подтверждение</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="addActivityFearBased" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">
+                                😱 Активность вызывает страх (выход из зоны комфорта)
+                            </label>
+                            <div style="display: flex; align-items: center;">
+                                <input type="checkbox" id="addActivityFearBased" style="margin-right: 10px; width: 18px; height: 18px;">
+                                <span style="color: #666; font-size: 13px;">Отметьте, если активность требует выхода из зоны комфорта</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="addActivityConfidenceIntention">Какое доказательство уверенности создаст эта активность?</label>
+                            <textarea id="addActivityConfidenceIntention" placeholder="Например: докажу, что могу выступать на публике / покажу, что могу вести переговоры..."
+                                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 60px; resize: vertical;"></textarea>
+                        </div>
+                    `;
+                    document.getElementById('addForm').appendChild(confidenceFields);
+                }
             } else if (type === 'task') {
                 addModalTitle.textContent = 'Добавить задачу';
                 addDeadlineGroup.style.display = 'block';
@@ -1530,7 +1774,67 @@
                     document.getElementById('addForm').insertBefore(monthSelect, document.getElementById('addDeadlineGroup'));
                 }
             }
-            
+
+            // Add confidence fields if in confidence mode and not an activity
+            if (confidenceMode && type !== 'activity') {
+                const confidenceFields = document.createElement('div');
+                confidenceFields.className = 'confidence-panel';
+                confidenceFields.innerHTML = `
+                    <h4 style="margin: 0 0 10px 0; color: var(--confidence-primary);">
+                        <i class="fas fa-brain"></i> Параметры уверенности
+                    </h4>
+
+                    <div class="form-group">
+                        <label for="addConfidenceScore">Уровень уверенности для цели (1-10):</label>
+                        <input type="range" id="addConfidenceScore" min="1" max="10" value="5" style="width: 100%;"
+                               oninput="document.getElementById('confidenceValue').textContent = this.value">
+                        <div style="text-align: center; margin-top: 5px;">
+                            <span id="confidenceValue" style="font-weight: bold; color: var(--confidence-primary);">5</span>/10
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addCategory">Категория уверенности:</label>
+                        <select id="addCategory" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Обычная цель</option>
+                            <option value="social">Социальная уверенность</option>
+                            <option value="professional">Профессиональная уверенность</option>
+                            <option value="personal">Личная уверенность</option>
+                            <option value="leadership">Лидерская уверенность</option>
+                            <option value="communication">Коммуникативная уверенность</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addCoreType">CORE тип:</label>
+                        <select id="addCoreType" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Не указано</option>
+                            <option value="courage">🔥 Смелость - действовать несмотря на страх</option>
+                            <option value="ownership">🛡️ Ответственность - взять контроль</option>
+                            <option value="repetition">🔄 Повторение - систематические действия</option>
+                            <option value="evidence">🏆 Доказательства - создать подтверждение</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addFearBased" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">
+                            😱 Это цель из зоны комфорта (вызывает страх)
+                        </label>
+                        <div style="display: flex; align-items: center;">
+                            <input type="checkbox" id="addFearBased" style="margin-right: 10px; width: 18px; height: 18px;">
+                            <span style="color: #666; font-size: 13px;">Отметьте, если цель вызывает страх или требует выхода из зоны комфорта</span>
+                        </div>
+                        <div style="font-size: 12px; color: #666; margin-top: 8px;">
+                            Выход из зоны комфорта поможет развить смелость и уверенность
+                        </div>
+                    </div>
+                `;
+
+                // Add confidence fields to the form
+                const form = document.getElementById('addForm');
+                form.appendChild(confidenceFields);
+            }
+
             document.getElementById('addModal').style.display = 'flex';
         }
 
@@ -1551,6 +1855,346 @@
             if (monthSelect && monthSelect.parentNode) {
                 monthSelect.parentNode.remove();
             }
+        }
+
+        // Confidence Functions
+        function toggleConfidenceMode() {
+            confidenceMode = !confidenceMode;
+            const toggle = document.getElementById('confidenceToggle');
+            const modeText = document.getElementById('confidenceModeText');
+            const confidenceStats = document.getElementById('confidence-stats');
+            const courageStats = document.getElementById('courage-stats');
+            const evidenceStats = document.getElementById('evidence-stats');
+
+            if (confidenceMode) {
+                toggle.classList.add('active');
+                modeText.textContent = 'Вкл';
+                confidenceStats.style.display = 'block';
+                courageStats.style.display = 'block';
+                evidenceStats.style.display = 'block';
+                showNotification('Режим уверенности включен! Добавляйте смелые цели и отслеживайте доказательства.', 'success');
+            } else {
+                toggle.classList.remove('active');
+                modeText.textContent = 'Выкл';
+                confidenceStats.style.display = 'none';
+                courageStats.style.display = 'none';
+                evidenceStats.style.display = 'none';
+            }
+
+            updateHeaderButtons();
+            refreshBoard();
+            updateConfidenceStats();
+        }
+
+        function updateHeaderButtons() {
+            const headerDiv = document.getElementById('confidenceControls');
+            if (!headerDiv) return;
+
+            headerDiv.innerHTML = `
+                <button id="confidenceToggle" class="confidence-toggle ${confidenceMode ? 'active' : ''}" onclick="toggleConfidenceMode()">
+                    <i class="fas fa-brain"></i> Режим уверенности: <span id="confidenceModeText">${confidenceMode ? 'Вкл' : 'Выкл'}</span>
+                </button>
+                ${confidenceMode ? `
+                    <button class="confidence-toggle" onclick="showStateEngineering()" style="margin-left: 10px;">
+                        <i class="fas fa-bolt"></i> ⚡ Состояние
+                    </button>
+                    <button class="confidence-toggle" onclick="showEvidencePanel()" style="margin-left: 10px;">
+                        <i class="fas fa-trophy"></i> 🏆 Доказательства
+                    </button>
+                    <button class="confidence-toggle" onclick="debugConfidenceMode()" style="margin-left: 10px; font-size: 11px;">
+                        <i class="fas fa-bug"></i> 🐛 Debug
+                    </button>
+                ` : ''}
+            `;
+        }
+
+        function calculateConfidenceScore() {
+            const coreTotal = confidenceData.courage + confidenceData.ownership +
+                            confidenceData.repetition + confidenceData.evidence;
+            const goalBonus = goals.filter(g => g.confidenceScore > 7).length * 5;
+            const taskBonus = tasks.filter(t => t.completed && t.fearBased).length * 3;
+            const activityBonus = activities.filter(a => a.completed && a.coreType).length * 2;
+
+            confidenceData.score = Math.min(Math.floor((coreTotal + goalBonus + taskBonus + activityBonus) / 5), 100);
+            saveConfidenceData();
+        }
+
+        function updateConfidenceStats() {
+            document.getElementById('confidence-score').textContent = confidenceData.score;
+            document.getElementById('courage-count').textContent = confidenceData.courage;
+            document.getElementById('evidence-count').textContent = confidenceData.evidence;
+        }
+
+        function saveConfidenceData() {
+            localStorage.setItem('confidenceData', JSON.stringify(confidenceData));
+        }
+
+        function addCoreActivity(type, description, points = 1) {
+            confidenceData[type]++;
+            confidenceData.activities.push({
+                type: type,
+                description: description,
+                timestamp: new Date().toISOString(),
+                points: points
+            });
+
+            calculateConfidenceScore();
+            updateConfidenceStats();
+            saveConfidenceData();
+
+            const label = CORE_LABELS[type];
+            showNotification(`${label} засчитано! +${points} очков уверенности`, 'success');
+        }
+
+        function addEvidence(description, feeling = 5) {
+            confidenceData.evidence++;
+            confidenceData.evidenceLog.push({
+                description: description,
+                feeling: feeling,
+                timestamp: new Date().toISOString()
+            });
+
+            confidenceData.activities.push({
+                type: 'evidence',
+                description: description,
+                timestamp: new Date().toISOString(),
+                points: 5
+            });
+
+            calculateConfidenceScore();
+            updateConfidenceStats();
+            saveConfidenceData();
+            showNotification('Доказательство добавлено! +5 очков уверенности', 'success');
+        }
+
+        function showStateEngineering() {
+            const modal = document.getElementById('addModal');
+            const modalTitle = document.getElementById('addModalTitle');
+            const form = document.getElementById('addForm');
+
+            modalTitle.textContent = '⚡ Инструменты состояния';
+            form.innerHTML = `
+                <div class="confidence-panel">
+                    <h4>🧠 Управление состоянием для продуктивной работы</h4>
+                    <p style="margin: 10px 0; color: #666;">Выберите инструмент для переключения в уверенное состояние:</p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0;">
+                        <div class="state-tool" onclick="startBreathing()">
+                            <i class="fas fa-wind"></i><br>Дыхание (2 мин)
+                        </div>
+                        <div class="state-tool" onclick="powerPose()">
+                            <i class="fas fa-user"></i><br>Power Pose (1 мин)
+                        </div>
+                        <div class="state-tool" onclick="playEnergizingMusic()">
+                            <i class="fas fa-music"></i><br>Энергизирующая музыка
+                        </div>
+                        <div class="state-tool" onclick="quickMovement()">
+                            <i class="fas fa-running"></i><br>Быстрое движение
+                        </div>
+                        <div class="state-tool" onclick="confidenceMantra()">
+                            <i class="fas fa-comment"></i><br>Мантра уверенности
+                        </div>
+                        <div class="state-tool" onclick="visualizeSuccess()">
+                            <i class="fas fa-eye"></i><br>Визуализация успеха
+                        </div>
+                    </div>
+
+                    <div class="confidence-ritual">
+                        <h5>🔄 Ритуал активации (90 секунд)</h5>
+                        <div style="text-align: center; margin: 10px 0;">
+                            <div class="breathing-circle"></div>
+                            <p style="font-size: 12px; color: #666;">Дышите глубоко и равномерно</p>
+                        </div>
+                        <ol style="font-size: 13px; line-height: 1.4;">
+                            <li><strong>Дыхание (30сек):</strong> Глубокие вдохи и выдохи</li>
+                            <li><strong>Поза (30сек):</strong> Расправьте плечи, поднимите подбородок</li>
+                            <li><strong>Намерение (30сек):</strong> Четко сформулируйте цель</li>
+                        </ol>
+                        <button type="button" onclick="completeActivationRitual()" class="btn-primary" style="margin-top: 10px; width: 100%;">
+                            ✅ Завершить ритуал активации
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="closeAddModal()">Закрыть</button>
+                </div>
+            `;
+
+            modal.style.display = 'flex';
+        }
+
+        function startBreathing() {
+            showNotification('Начните дышать глубоко: 4 счета вдох, 7 задержка, 8 выдох. Повторяйте 2 минуты.', 'info');
+            addCoreActivity('repetition', 'Дыхательная практика 2 минуты', 2);
+        }
+
+        function powerPose() {
+            showNotification('Встаньте в power pose: руки на бедрах, грудь раскрыта, подбородок поднят. Удерживайте 1 минуту.', 'info');
+            addCoreActivity('courage', 'Power pose 1 минута', 2);
+        }
+
+        function playEnergizingMusic() {
+            showNotification('Включите вашу энергизирующую музыку и двигайтесь под нее 3 минуты.', 'info');
+            addCoreActivity('repetition', 'Музыкальная активация', 2);
+        }
+
+        function quickMovement() {
+            showNotification('Сделайте 20 прыжков или приседаний для быстрой активации.', 'info');
+            addCoreActivity('repetition', 'Быстрая физическая активация', 1);
+        }
+
+        function confidenceMantra() {
+            const mantra = prompt('Введите вашу мантру уверенности:', 'Я способен, я готов, я действую!');
+            if (mantra) {
+                showNotification(`Повторяйте вашу мантру 10 раз с энергией: "${mantra}"`, 'info');
+                addCoreActivity('ownership', "Повторение мантры уверенности", 2);
+            }
+        }
+
+        function visualizeSuccess() {
+            const goal = prompt('Какую цель вы хотите визуализировать?');
+            if (goal) {
+                showNotification(`Закройте глаза и представьте, как вы успешно достигаете: ${goal}. Почувствуйте успех!`, 'info');
+                addCoreActivity('evidence', `Визуализация успеха: ${goal}`, 3);
+            }
+        }
+
+        function completeActivationRitual() {
+            addCoreActivity('courage', 'Завершен полный ритуал активации', 5);
+            closeAddModal();
+            showNotification('Ритуал активации завершен! Вы в оптимальном состоянии для работы. 💪', 'success');
+        }
+
+        function showEvidencePanel() {
+            const modal = document.getElementById('addModal');
+            const modalTitle = document.getElementById('addModalTitle');
+            const form = document.getElementById('addForm');
+
+            modalTitle.textContent = '🏆 Ваши доказательства уверенности';
+            form.innerHTML = `
+                <div class="confidence-panel">
+                    <h4>📈 Ваша статистика уверенности</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0;">
+                        <div style="text-align: center; padding: 10px; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: bold; color: var(--courage);">${confidenceData.courage}</div>
+                            <div style="font-size: 12px; color: #666;">Смелость</div>
+                        </div>
+                        <div style="text-align: center; padding: 10px; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: bold; color: var(--ownership);">${confidenceData.ownership}</div>
+                            <div style="font-size: 12px; color: #666;">Ответственность</div>
+                        </div>
+                        <div style="text-align: center; padding: 10px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: bold; color: var(--repetition);">${confidenceData.repetition}</div>
+                            <div style="font-size: 12px; color: #666;">Повторение</div>
+                        </div>
+                        <div style="text-align: center; padding: 10px; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: bold; color: var(--evidence);">${confidenceData.evidence}</div>
+                            <div style="font-size: 12px; color: #666;">Доказательства</div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin: 20px 0; padding: 15px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1)); border-radius: 12px;">
+                        <div style="font-size: 36px; font-weight: bold; background: linear-gradient(135deg, var(--confidence-primary), var(--confidence-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">${confidenceData.score}</div>
+                        <div style="font-size: 14px; color: #666;">Общий уровень уверенности</div>
+                    </div>
+
+                    <h4>📝 Последние доказательства</h4>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        ${confidenceData.evidenceLog.length > 0 ?
+                            confidenceData.evidenceLog.slice(-10).reverse().map(log => `
+                                <div class="evidence-log">
+                                    <div style="font-weight: bold; color: var(--evidence);">${log.description}</div>
+                                    <div style="font-size: 11px; color: #999;">${new Date(log.timestamp).toLocaleDateString()}</div>
+                                    ${log.feeling ? `<div style="font-size: 11px; color: #666;">Ощущения: ${log.feeling}/10</div>` : ''}
+                                </div>
+                            `).join('') :
+                            '<p style="color: #666; font-style: italic;">Пока нет доказательств. Начните создавать их!</p>'
+                        }
+                    </div>
+
+                    <h4>➕ Добавить новое доказательство</h4>
+                    <div style="margin: 15px 0;">
+                        <textarea id="newEvidence" placeholder="Опишите, что вы сделали и как это доказывает вашу уверенность..."
+                                  style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; resize: vertical;"></textarea>
+                        <div style="margin: 10px 0;">
+                            <label>Насколько это было сложно (1-10)?</label>
+                            <input type="range" id="evidenceFeeling" min="1" max="10" value="5" style="width: 100%;"
+                                   oninput="document.getElementById('feelingValue').textContent = this.value">
+                            <div style="text-align: center; font-size: 12px; color: #666;">
+                                <span id="feelingValue">5</span>/10
+                            </div>
+                        </div>
+                        <button type="button" onclick="addNewEvidence()" class="btn-primary" style="width: 100%;">
+                            <i class="fas fa-plus"></i> Добавить доказательство
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="closeAddModal()">Закрыть</button>
+                </div>
+            `;
+
+            modal.style.display = 'flex';
+        }
+
+        function addNewEvidence() {
+            const description = document.getElementById('newEvidence').value;
+            const feeling = parseInt(document.getElementById('evidenceFeeling').value);
+
+            if (!description.trim()) {
+                showNotification('Пожалуйста, опишите доказательство', 'warning');
+                return;
+            }
+
+            addEvidence(description, feeling);
+            document.getElementById('newEvidence').value = '';
+            document.getElementById('evidenceFeeling').value = 5;
+            document.getElementById('feelingValue').textContent = '5';
+
+            // Update the panel
+            showEvidencePanel();
+        }
+
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'linear-gradient(135deg, #10b981, #059669)',
+                info: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                error: 'linear-gradient(135deg, #ef4444, #dc2626)'
+            };
+
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${colors[type]};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 12px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 10000;
+                max-width: 300px;
+                font-size: 14px;
+                transform: translateX(400px);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
         }
 
         function saveAdd(event) {
@@ -1583,6 +2227,10 @@
             const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
             const dayOfWeek = dayNames[dayIndex];
             
+            // Enhanced activity model with confidence features
+            const coreType = confidenceMode && document.getElementById('addActivityCoreType') ?
+                           document.getElementById('addActivityCoreType').value : null;
+
             const activity = {
                 id: Date.now().toString(),
                 parentId: null,
@@ -1593,16 +2241,54 @@
                 date: dateStr,
                 dayOfWeek: dayOfWeek,
                 taskId: taskId,
-                status: 'active'
+                status: 'active',
+                // Confidence enhancements
+                ...(confidenceMode && {
+                    coreType: coreType,
+                    createdAt: new Date().toISOString()
+                })
             };
             activities.push(activity);
             localStorage.setItem('activities', JSON.stringify(activities));
-            
+
+            // Confidence mode tracking for activities
+            if (confidenceMode && coreType) {
+                const fearBased = document.getElementById('addActivityFearBased')?.checked || false;
+                const intention = document.getElementById('addActivityConfidenceIntention')?.value || '';
+
+                // Track CORE activity
+                addCoreActivity(coreType, `Активность: ${title}`, 2);
+
+                // Track fear-based activities
+                if (fearBased) {
+                    addCoreActivity('courage', `Смелая активность: ${title}`, 3);
+                    showNotification('Смелая активность запланирована! Это требует мужества. 💪', 'success');
+                }
+
+                // Track evidence intentions
+                if (intention && coreType === 'evidence') {
+                    confidenceData.evidenceLog.push({
+                        description: `Планируется: ${intention}`,
+                        activityTitle: title,
+                        planned: true,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveConfidenceData();
+                    showNotification('Запланировано создание доказательства! 📝', 'success');
+                }
+            }
+
             // Always call renderBoard to properly update the view
             renderBoard();
         }
 
         function addGoal(type, title, description, deadline) {
+            // Enhanced goal model with confidence features
+            const confidenceScore = confidenceMode ? (document.getElementById('addConfidenceScore')?.value || 5) : null;
+            const fearBased = confidenceMode ? document.getElementById('addFearBased')?.checked || false : false;
+            const coreType = confidenceMode ? document.getElementById('addCoreType')?.value || null : null;
+            const category = confidenceMode ? document.getElementById('addCategory')?.value || null : null;
+
             const goal = {
                 id: Date.now().toString(),
                 type: type,
@@ -1610,7 +2296,15 @@
                 title: title,
                 description: description,
                 deadline: deadline,
-                status: 'active'
+                status: 'active',
+                // Confidence enhancements (only if in confidence mode)
+                ...(confidenceMode && {
+                    confidenceScore: parseInt(confidenceScore),
+                    fearBased: fearBased,
+                    coreType: coreType,
+                    category: category,
+                    createdAt: new Date().toISOString()
+                })
             };
             
             if (type === 'month') {
@@ -1628,7 +2322,29 @@
                 goals.push(goal);
                 localStorage.setItem('goals', JSON.stringify(goals));
             }
-            
+
+            // Confidence mode tracking
+            if (confidenceMode) {
+                // Track CORE goals
+                if (coreType && confidenceData.coreGoals[coreType]) {
+                    confidenceData.coreGoals[coreType].push(goal.id);
+                }
+
+                // Track fear-based goals
+                if (fearBased) {
+                    addCoreActivity('courage', `Создана смелая цель: ${title}`, 3);
+                    showNotification('Смелая цель создана! Это требует мужества. 💪', 'success');
+                }
+
+                // Track high confidence goals
+                if (confidenceScore > 7) {
+                    addCoreActivity('ownership', `Поставлена амбициозная цель: ${title}`, 2);
+                }
+
+                calculateConfidenceScore();
+                updateConfidenceStats();
+            }
+
             renderBoard();
         }
 
@@ -1657,7 +2373,56 @@
                 durationGroup.style.display = 'block';
                 document.getElementById('editStartTime').value = item.startTime ? new Date(item.startTime).toISOString().slice(0, 16) : '';
                 document.getElementById('editDuration').value = item.duration || '';
-                
+
+                // Remove existing confidence fields if any
+                const existingConfidenceFields = document.getElementById('editConfidenceFields');
+                if (existingConfidenceFields) existingConfidenceFields.remove();
+
+                // Add confidence fields if in confidence mode
+                if (confidenceMode) {
+                    const confidenceFields = document.createElement('div');
+                    confidenceFields.id = 'editConfidenceFields';
+                    confidenceFields.className = 'confidence-panel';
+                    confidenceFields.innerHTML = `
+                        <h4 style="margin: 10px 0; color: var(--confidence-primary);">
+                            <i class="fas fa-brain"></i> Параметры уверенности активности
+                        </h4>
+
+                        <div class="form-group">
+                            <label for="editActivityCoreType">CORE тип активности:</label>
+                            <select id="editActivityCoreType" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="">Обычная активность</option>
+                                <option value="courage" ${item.coreType === 'courage' ? 'selected' : ''}>🔥 Смелость - активность требует мужества</option>
+                                <option value="ownership" ${item.coreType === 'ownership' ? 'selected' : ''}>🛡️ Ответственность - взять ответственность</option>
+                                <option value="repetition" ${item.coreType === 'repetition' ? 'selected' : ''}>🔄 Повторение - практика навыка</option>
+                                <option value="evidence" ${item.coreType === 'evidence' ? 'selected' : ''}>🏆 Доказательства - создать подтверждение</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editActivityFearBased" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">
+                                😱 Активность вызывает страх (выход из зоны комфорта)
+                            </label>
+                            <div style="display: flex; align-items: center;">
+                                <input type="checkbox" id="editActivityFearBased" ${item.fearBased ? 'checked' : ''} style="margin-right: 10px; width: 18px; height: 18px;">
+                                <span style="color: #666; font-size: 13px;">Отметьте, если активность требует выхода из зоны комфорта</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editActivityConfidenceIntention">Какое доказательство уверенности создаст эта активность?</label>
+                            <textarea id="editActivityConfidenceIntention" placeholder="Например: докажу, что могу выступать на публике / покажу, что могу вести переговоры..."
+                                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 60px; resize: vertical;">${item.confidenceIntention || ''}</textarea>
+                        </div>
+                    `;
+
+                    // Find the form and append confidence fields
+                    const editForm = document.querySelector('#editModal form');
+                    if (editForm) {
+                        editForm.appendChild(confidenceFields);
+                    }
+                }
+
                 // Remove month and parent groups if exist
                 const monthGroup = document.getElementById('editMonthGroup');
                 if (monthGroup) monthGroup.remove();
@@ -1724,7 +2489,74 @@
                     if (parentGroup) parentGroup.remove();
                 }
             }
-            
+
+            // Add confidence fields for tasks if in confidence mode
+            if (confidenceMode && (type === 'task' || type === 'month' || type === 'year')) {
+                // Remove existing confidence fields if any
+                const existingConfidenceFields = document.getElementById('editGoalConfidenceFields');
+                if (existingConfidenceFields) existingConfidenceFields.remove();
+
+                const confidenceFields = document.createElement('div');
+                confidenceFields.id = 'editGoalConfidenceFields';
+                confidenceFields.className = 'confidence-panel';
+                confidenceFields.innerHTML = `
+                    <h4 style="margin: 10px 0; color: var(--confidence-primary);">
+                        <i class="fas fa-brain"></i> Параметры уверенности цели
+                    </h4>
+
+                    <div class="form-group">
+                        <label for="editConfidenceScore">Уровень уверенности для цели (1-10):</label>
+                        <input type="range" id="editConfidenceScore" min="1" max="10" value="${item.confidenceScore || 5}" style="width: 100%;"
+                               oninput="document.getElementById('editConfidenceValue').textContent = this.value">
+                        <div style="text-align: center; margin-top: 5px;">
+                            <span id="editConfidenceValue" style="font-weight: bold; color: var(--confidence-primary);">${item.confidenceScore || 5}</span>/10
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editCategory">Категория уверенности:</label>
+                        <select id="editCategory" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Обычная цель</option>
+                            <option value="social" ${item.category === 'social' ? 'selected' : ''}>Социальная уверенность</option>
+                            <option value="professional" ${item.category === 'professional' ? 'selected' : ''}>Профессиональная уверенность</option>
+                            <option value="personal" ${item.category === 'personal' ? 'selected' : ''}>Личная уверенность</option>
+                            <option value="leadership" ${item.category === 'leadership' ? 'selected' : ''}>Лидерская уверенность</option>
+                            <option value="communication" ${item.category === 'communication' ? 'selected' : ''}>Коммуникативная уверенность</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editCoreType">CORE тип:</label>
+                        <select id="editCoreType" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Не указано</option>
+                            <option value="courage" ${item.coreType === 'courage' ? 'selected' : ''}>🔥 Смелость - действовать несмотря на страх</option>
+                            <option value="ownership" ${item.coreType === 'ownership' ? 'selected' : ''}>🛡️ Ответственность - взять контроль</option>
+                            <option value="repetition" ${item.coreType === 'repetition' ? 'selected' : ''}>🔄 Повторение - систематические действия</option>
+                            <option value="evidence" ${item.coreType === 'evidence' ? 'selected' : ''}>🏆 Доказательства - создать подтверждение</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editFearBased" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">
+                            😱 Это цель из зоны комфорта (вызывает страх)
+                        </label>
+                        <div style="display: flex; align-items: center;">
+                            <input type="checkbox" id="editFearBased" ${item.fearBased ? 'checked' : ''} style="margin-right: 10px; width: 18px; height: 18px;">
+                            <span style="color: #666; font-size: 13px;">Отметьте, если цель вызывает страх или требует выхода из зоны комфорта</span>
+                        </div>
+                        <div style="font-size: 12px; color: #666; margin-top: 8px;">
+                            Выход из зоны комфорта поможет развить смелость и уверенность
+                        </div>
+                    </div>
+                `;
+
+                // Find the form and append confidence fields
+                const editForm = document.querySelector('#editModal form');
+                if (editForm) {
+                    editForm.appendChild(confidenceFields);
+                }
+            }
+
             document.getElementById('editModal').style.display = 'flex';
         }
 
@@ -1746,7 +2578,7 @@
                 const newStartTime = document.getElementById('editStartTime').value;
                 editingItem.startTime = newStartTime;
                 editingItem.duration = document.getElementById('editDuration').value;
-                
+
                 // Update dayOfWeek based on new date
                 if (newStartTime) {
                     const date = new Date(newStartTime);
@@ -1755,6 +2587,26 @@
                     editingItem.dayOfWeek = dayNames[dayIndex];
                     editingItem.date = date.toISOString().split('T')[0];
                 }
+
+                // Update confidence fields if in confidence mode
+                if (confidenceMode) {
+                    const coreTypeElement = document.getElementById('editActivityCoreType');
+                    const fearBasedElement = document.getElementById('editActivityFearBased');
+                    const confidenceIntentionElement = document.getElementById('editActivityConfidenceIntention');
+
+                    if (coreTypeElement) {
+                        editingItem.coreType = coreTypeElement.value || null;
+                    }
+                    if (fearBasedElement) {
+                        editingItem.fearBased = fearBasedElement.checked || false;
+                    }
+                    if (confidenceIntentionElement) {
+                        editingItem.confidenceIntention = confidenceIntentionElement.value || '';
+                    }
+
+                    // Update timestamp
+                    editingItem.updatedAt = new Date().toISOString();
+                }
             } else {
                 editingItem.deadline = document.getElementById('editDeadline').value;
                 if (editingType === 'month') {
@@ -1762,6 +2614,30 @@
                 }
                 if (editingType === 'task') {
                     editingItem.parentId = document.getElementById('editParentGoal').value || null;
+                }
+
+                // Update confidence fields if in confidence mode
+                if (confidenceMode) {
+                    const confidenceScoreElement = document.getElementById('editConfidenceScore');
+                    const categoryElement = document.getElementById('editCategory');
+                    const coreTypeElement = document.getElementById('editCoreType');
+                    const fearBasedElement = document.getElementById('editFearBased');
+
+                    if (confidenceScoreElement) {
+                        editingItem.confidenceScore = parseInt(confidenceScoreElement.value);
+                    }
+                    if (categoryElement) {
+                        editingItem.category = categoryElement.value || null;
+                    }
+                    if (coreTypeElement) {
+                        editingItem.coreType = coreTypeElement.value || null;
+                    }
+                    if (fearBasedElement) {
+                        editingItem.fearBased = fearBasedElement.checked || false;
+                    }
+
+                    // Update timestamp
+                    editingItem.updatedAt = new Date().toISOString();
                 }
             }
             
@@ -1788,9 +2664,57 @@
             }
             
             if (!item) return;
-            
+
+            const isCompleting = item.status !== 'completed';
             item.status = item.status === 'completed' ? 'active' : 'completed';
             localStorage.setItem(type === 'activity' ? 'activities' : type === 'task' ? 'tasks' : 'goals', JSON.stringify(array));
+
+            // Confidence mode tracking for completions
+            if (confidenceMode && isCompleting) {
+                if (item.fearBased) {
+                    // Extra points for completing fear-based goals/activities
+                    addCoreActivity('courage', `Завершено: ${item.title} (цель из зоны комфорта)`, 5);
+                    showNotification('🔥 Смелая цель достигнута! Вы вышли из зоны комфорта! +5 очков мужества', 'success');
+                }
+
+                if (item.coreType) {
+                    // Track CORE completion
+                    addCoreActivity(item.coreType, `Завершен CORE элемент: ${item.title}`, 3);
+
+                    if (item.coreType === 'evidence') {
+                        // Special handling for evidence completion
+                        addEvidence(`Доказательство создано: ${item.title}`, 8);
+                        showNotification('🏆 Доказательство уверенности создано! Отличная работа!', 'success');
+                    }
+                }
+
+                if (item.confidenceScore && item.confidenceScore > 7) {
+                    addCoreActivity('ownership', `Достигнута сложная цель: ${item.title}`, 4);
+                    showNotification('🎯 Амбициозная цель достигнута! Ваша уверенность растет!', 'success');
+                }
+
+                // Track category-specific achievements
+                if (item.category) {
+                    const categoryPoints = {
+                        social: 3,
+                        leadership: 4,
+                        communication: 3,
+                        professional: 2,
+                        personal: 2
+                    };
+                    const points = categoryPoints[item.category] || 1;
+                    addCoreActivity('evidence', `Достижение в категории ${getCategoryLabel(item.category)}: ${item.title}`, points);
+                }
+
+                // If it's an activity with task, also update task confidence
+                if (type === 'activity' && item.taskId) {
+                    const task = tasks.find(t => t.id === item.taskId);
+                    if (task && task.fearBased) {
+                        addCoreActivity('courage', `Выполнена активность для смелой задачи: ${item.title}`, 2);
+                    }
+                }
+            }
+
             renderBoard();
         }
 
@@ -2119,11 +3043,25 @@
                     const activityCard = document.createElement('div');
                     activityCard.className = 'overview-activity-card';
                     activityCard.innerHTML = `
-                        <div class="activity-title">${activity.title}</div>
+                        <div class="activity-title">
+                            ${activity.title}
+                            ${confidenceMode && activity.confidenceScore ? `<span class="confidence-score">${activity.confidenceScore}/10</span>` : ''}
+                        </div>
                         <div class="activity-desc">${activity.description || ''}</div>
                         <div class="activity-time">Время: ${activity.startTime ? new Date(activity.startTime).toLocaleTimeString() : 'Не указано'}</div>
                         <div class="activity-time">Длительность: ${activity.duration}ч</div>
                         <div class="activity-status">Статус: ${activity.status === 'completed' ? 'Завершена' : 'Активна'}</div>
+
+                        <!-- Confidence Indicators (only show in confidence mode) -->
+                        ${confidenceMode ? `
+                            ${activity.fearBased ? '<div class="fear-indicator">😱 Активность из зоны комфорта</div>' : ''}
+                            ${activity.coreType ? `<div class="core-badge core-${activity.coreType}">${CORE_LABELS[activity.coreType]}</div>` : ''}
+                            ${activity.taskId ? (() => {
+                                const task = tasks.find(t => t.id === activity.taskId);
+                                return task?.category ? `<div style="font-size: 11px; color: #666; margin: 2px 0;">📂 ${getCategoryLabel(task.category)}</div>` : '';
+                            })() : ''}
+                        ` : ''}
+
                         <div style="margin-top: 10px;">
                             <button onclick="event.stopPropagation(); completeItem('${activity.id}', 'activity')" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✓</button>
                             <button onclick="editItem('${activity.id}', 'activity')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
@@ -2256,11 +3194,25 @@
                     const activityCard = document.createElement('div');
                     activityCard.className = 'overview-activity-card';
                     activityCard.innerHTML = `
-                        <div class="activity-title">${activity.title}</div>
+                        <div class="activity-title">
+                            ${activity.title}
+                            ${confidenceMode && activity.confidenceScore ? `<span class="confidence-score">${activity.confidenceScore}/10</span>` : ''}
+                        </div>
                         <div class="activity-desc">${activity.description || ''}</div>
                         <div class="activity-time">Время: ${activity.startTime ? new Date(activity.startTime).toLocaleTimeString() : 'Не указано'}</div>
                         <div class="activity-time">Длительность: ${activity.duration}ч</div>
                         <div class="activity-status">Статус: ${activity.status === 'completed' ? 'Завершена' : 'Активна'}</div>
+
+                        <!-- Confidence Indicators (only show in confidence mode) -->
+                        ${confidenceMode ? `
+                            ${activity.fearBased ? '<div class="fear-indicator">😱 Активность из зоны комфорта</div>' : ''}
+                            ${activity.coreType ? `<div class="core-badge core-${activity.coreType}">${CORE_LABELS[activity.coreType]}</div>` : ''}
+                            ${activity.taskId ? (() => {
+                                const task = tasks.find(t => t.id === activity.taskId);
+                                return task?.category ? `<div style="font-size: 11px; color: #666; margin: 2px 0;">📂 ${getCategoryLabel(task.category)}</div>` : '';
+                            })() : ''}
+                        ` : ''}
+
                         <div style="margin-top: 10px;">
                             <button onclick="event.stopPropagation(); completeItem('${activity.id}', 'activity')" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✓</button>
                             <button onclick="editItem('${activity.id}', 'activity')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
@@ -2352,6 +3304,57 @@
                 console.error('Invalid JSON in URL:', e);
             }
         }
+
+        // Debug function
+        function debugConfidenceMode() {
+            console.log('=== DEBUG CONFIDENCE MODE ===');
+            console.log('confidenceMode:', confidenceMode);
+            console.log('confidenceData:', confidenceData);
+            console.log('activities count:', activities.length);
+            console.log('tasks count:', tasks.length);
+            console.log('goals count:', goals.length);
+
+            // Check activities with confidence data
+            const activitiesWithConfidence = activities.filter(a => a.coreType || a.fearBased || a.confidenceScore);
+            console.log('activities with confidence data:', activitiesWithConfidence);
+
+            // Check DOM elements
+            const addBtn = document.querySelector('button[onclick*="showAddForm(\'activity\')"]');
+            console.log('add activity button found:', !!addBtn);
+
+            const editModal = document.getElementById('editModal');
+            console.log('edit modal found:', !!editModal);
+
+            const confidenceControls = document.getElementById('confidenceControls');
+            console.log('confidence controls found:', !!confidenceControls);
+
+            return true;
+        }
+
+        // Initialize confidence features on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateConfidenceStats();
+            updateHeaderButtons();
+            calculateConfidenceScore();
+
+            // Check if user wants confidence mode by default
+            const savedMode = localStorage.getItem('confidenceMode');
+            if (savedMode === 'true') {
+                confidenceMode = true;
+                updateHeaderButtons();
+                updateConfidenceStats();
+            }
+
+            // Debug: Call debug function after a short delay
+            setTimeout(debugConfidenceMode, 1000);
+        });
+
+        // Save confidence mode preference
+        window.addEventListener('beforeunload', function() {
+            localStorage.setItem('confidenceMode', confidenceMode.toString());
+            saveConfidenceData();
+        });
+
     </script>
 </body>
 </html>
